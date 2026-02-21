@@ -41,9 +41,9 @@ async function processEmailJob(
   emailBatchCount++;
   const batchElapsed = Date.now() - emailBatchStartTime;
 
-  // Log batch progress
+  // Log batch progress (simple counter, no timing)
   console.log(
-    `[EmailWorker] 📧 Batch: ${emailBatchCount}/${EMAIL_BATCH_SIZE} | Elapsed: ${batchElapsed}ms/${EMAIL_BATCH_TIMEOUT}ms`,
+    `[EmailWorker] 📧 Processing: ${emailBatchCount}/${EMAIL_BATCH_SIZE}`,
   );
 
   // Process based on tag
@@ -84,10 +84,8 @@ async function processDlqJob(job: Job<DlqEntry, void, string>): Promise<void> {
   dlqBatchCount++;
   const batchElapsed = Date.now() - dlqBatchStartTime;
 
-  // Log batch progress
-  console.log(
-    `[DLQWorker] 🚨 Batch: ${dlqBatchCount}/${DLQ_BATCH_SIZE} | Elapsed: ${batchElapsed}ms/${DLQ_BATCH_TIMEOUT}ms`,
-  );
+  // Log batch progress (simple counter, no timing)
+  console.log(`[DLQWorker] 🚨 Processing: ${dlqBatchCount}/${DLQ_BATCH_SIZE}`);
 
   // Send individual alert to admin about this failed job
   await emailService.sendDeadLetterAlert(entry);
