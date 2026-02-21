@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://carpet-declare-applicable-cancer.trycloudflare.com/api";
 
 export type ApiEnvelope<T> = {
   success: boolean;
@@ -101,7 +103,10 @@ export const vehiclesApi = {
     region?: string;
     retired?: string;
   }) => {
-    const q = new URLSearchParams(params as Record<string, string>).toString();
+    const filteredParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== "")
+    );
+    const q = new URLSearchParams(filteredParams as Record<string, string>).toString();
     return api<unknown[]>(`/vehicles${q ? `?${q}` : ""}`);
   },
   listAvailable: (vehicleType?: string) =>
@@ -125,7 +130,10 @@ export const vehiclesApi = {
 
 export const driversApi = {
   list: (params?: { status?: string }) => {
-    const q = new URLSearchParams(params as Record<string, string>).toString();
+    const filteredParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== "")
+    );
+    const q = new URLSearchParams(filteredParams as Record<string, string>).toString();
     return api<unknown[]>(`/drivers${q ? `?${q}` : ""}`);
   },
   listAvailable: (licenseCategory?: string) =>

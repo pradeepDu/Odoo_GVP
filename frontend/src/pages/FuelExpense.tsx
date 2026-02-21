@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fuelApi, vehiclesApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function FuelExpense() {
   const [vehicleId, setVehicleId] = useState("");
@@ -111,13 +112,12 @@ export default function FuelExpense() {
               />
             </div>
             <div className="flex items-end">
-              <button
+              <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Add log
-              </button>
+              </Button>
             </div>
           </form>
         </CardContent>

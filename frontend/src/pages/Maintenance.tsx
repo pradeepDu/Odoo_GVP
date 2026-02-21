@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { maintenanceApi, vehiclesApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type Log = {
   id: number;
@@ -115,13 +116,12 @@ export default function Maintenance() {
               />
             </div>
             <div>
-              <button
+              <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Add log
-              </button>
+              </Button>
             </div>
           </form>
         </CardContent>

@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": [],
+    "skipDefaultLibCheck": true
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist", "__tests__"]

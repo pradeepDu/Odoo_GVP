@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface FormModalProps {
   open: boolean;
@@ -25,13 +26,13 @@ export function FormModal({ open, onClose, title, children, size = "md" }: FormM
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/50"
+        className="fixed inset-0 z-40 bg-black/20"
         aria-hidden
         onClick={onClose}
       />
       <div
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-card p-6 shadow-lg",
+          "fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-white p-6 shadow-lg pointer-events-auto",
           sizeClasses[size]
         )}
         role="dialog"
@@ -42,14 +43,15 @@ export function FormModal({ open, onClose, title, children, size = "md" }: FormM
           <h2 id="modal-title" className="text-lg font-semibold">
             {title}
           </h2>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            variant="ghost"
+            size="icon-xs"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
         {children}
       </div>

@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -109,22 +110,24 @@ export function DataTable<T>({
             Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="rounded border px-2 py-1 text-sm disabled:opacity-50"
+              variant="outline"
+              size="sm"
             >
               Previous
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="rounded border px-2 py-1 text-sm disabled:opacity-50"
+              variant="outline"
+              size="sm"
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       )}

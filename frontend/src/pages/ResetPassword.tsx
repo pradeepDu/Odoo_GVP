@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { authApi } from "@/lib/api";
 import { showApiError } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -209,13 +210,15 @@ export default function ResetPassword() {
                   minLength={6}
                   required
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 h-full px-3"
                 >
                   {showPassword ? "Hide" : "Show"}
-                </button>
+                </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Minimum 6 characters
@@ -245,13 +248,13 @@ export default function ResetPassword() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
               {loading ? "Resetting..." : "Reset Password"}
-            </button>
+            </Button>
 
             <div className="text-center text-sm">
               <Link

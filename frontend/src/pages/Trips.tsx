@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tripsApi, vehiclesApi, driversApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/StatusPill";
 
@@ -31,8 +32,8 @@ export default function Trips() {
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ["drivers", "available"],
-    queryFn: () => driversApi.listAvailable(),
+    queryKey: ["drivers"],
+    queryFn: () => driversApi.list() as Promise<any[]>,
   });
 
   const createMutation = useMutation({
@@ -163,13 +164,12 @@ export default function Trips() {
               />
             </div>
             <div className="sm:col-span-2 lg:col-span-5">
-              <button
+              <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 Create trip (Draft)
-              </button>
+              </Button>
             </div>
           </form>
         </CardContent>
@@ -221,13 +221,13 @@ export default function Trips() {
                       </td>
                       <td className="py-2 px-2 flex gap-1 flex-wrap">
                         {t.status === "DRAFT" && (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => dispatchMutation.mutate(t.id)}
-                            className="rounded bg-blue-500/20 text-blue-600 px-2 py-1 text-xs hover:bg-blue-500/30"
+                            size="xs"
                           >
                             Dispatch
-                          </button>
+                          </Button>
                         )}
                         {(t.status === "DISPATCHED" || t.status === "DRAFT") && (
                           <>
@@ -241,16 +241,17 @@ export default function Trips() {
                               }
                               className="w-24 rounded border border-input bg-background px-2 py-1 text-xs"
                             />
-                            <button
+                            <Button
                               type="button"
                               onClick={() => {
                                 const end = Number(completeOdometer[t.id]);
                                 if (!Number.isNaN(end)) completeMutation.mutate({ id: t.id, endOdometer: end });
                               }}
-                              className="rounded bg-emerald-500/20 text-emerald-600 px-2 py-1 text-xs"
+                              variant="secondary"
+                              size="xs"
                             >
                               Complete
-                            </button>
+                            </Button>
                           </>
                         )}
                       </td>

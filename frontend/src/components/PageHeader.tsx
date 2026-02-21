@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
 
 export interface PageHeaderAction {
   label: string;
@@ -49,19 +50,14 @@ export function PageHeader({
         </div>
         <div className="flex flex-wrap gap-2">
           {actions.map(({ label, onClick, primary }) => (
-            <button
+            <Button
               key={label}
               type="button"
               onClick={onClick}
-              className={cn(
-                "rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                primary
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border border-input bg-background hover:bg-muted"
-              )}
+              variant={primary ? "default" : "outline"}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

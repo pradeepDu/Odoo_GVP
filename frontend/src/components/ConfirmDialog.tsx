@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -42,23 +43,20 @@ export function ConfirmDialog({
         </h2>
         <p className="text-muted-foreground mt-2 text-sm">{message}</p>
         <div className="mt-6 flex justify-end gap-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
+            variant="outline"
           >
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleConfirm}
-            className={cn(
-              "rounded-md px-4 py-2 text-sm font-medium text-white",
-              variant === "danger" ? "bg-red-600 hover:bg-red-700" : "bg-primary hover:bg-primary/90"
-            )}
+            variant={variant === "danger" ? "destructive" : "default"}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface SideDrawerProps {
   open: boolean;
@@ -43,14 +44,15 @@ export function SideDrawer({ open, onClose, title, children, width = "md" }: Sid
           <h2 id="drawer-title" className="text-lg font-semibold">
             {title}
           </h2>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            variant="ghost"
+            size="icon-xs"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
         <div className="flex-1 overflow-auto p-4">{children}</div>
       </aside>

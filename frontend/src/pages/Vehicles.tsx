@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatusPill } from "@/components/StatusPill";
 import { FormModal } from "@/components/FormModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -153,21 +154,17 @@ export default function Vehicles() {
                         <StatusPill status={v.status} />
                       </td>
                       <td className="py-2 px-2">
-                        <button
+                        <Button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setConfirmRetire({ id: v.id, retired: !v.retired });
                           }}
-                          className={cn(
-                            "rounded px-2 py-1 text-xs",
-                            v.retired
-                              ? "bg-muted text-muted-foreground"
-                              : "bg-destructive/20 text-destructive hover:bg-destructive/30"
-                          )}
+                          variant={v.retired ? "ghost" : "destructive"}
+                          size="xs"
                         >
                           {v.retired ? "Restore" : "Retire"}
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -216,12 +213,12 @@ export default function Vehicles() {
             <input {...register("region")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
           </div>
           <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={createMutation.isPending} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+            <Button type="submit" disabled={createMutation.isPending}>
               Save
-            </button>
-            <button type="button" onClick={() => setModalOpen(false)} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-muted">
+            </Button>
+            <Button type="button" onClick={() => setModalOpen(false)} variant="outline">
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </FormModal>

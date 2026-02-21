@@ -11,6 +11,7 @@ import {
   BarChart3,
   LogOut,
 } from "lucide-react";
+import { Button } from "./ui/button";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -71,14 +72,16 @@ export default function Layout() {
           <div className="px-3 py-1 text-xs text-zinc-500 truncate" title={user?.email}>
             {user?.email}
           </div>
-          <button
+          <Button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
           >
             <LogOut className="h-4 w-4" />
             Log out
-          </button>
+          </Button>
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-6">
