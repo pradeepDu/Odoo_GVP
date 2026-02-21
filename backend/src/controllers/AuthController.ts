@@ -113,8 +113,13 @@ export class AuthController {
         sendError(res, zodErrorToMessage(e), 400);
         return;
       }
+      const message = e instanceof Error ? e.message : "Failed to process request";
+      if (message === "No account found with this email.") {
+        sendError(res, message, 404);
+        return;
+      }
       console.error("Forgot password error:", e);
-      sendError(res, e instanceof Error ? e.message : "Failed to process request", 500);
+      sendError(res, message, 500);
     }
   }
 

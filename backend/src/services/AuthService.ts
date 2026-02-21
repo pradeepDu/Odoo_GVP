@@ -99,14 +99,9 @@ export class AuthService {
     try {
       const user = await prisma.user.findUnique({ where: { email } });
 
-      // Always return success to prevent email enumeration attacks
       if (!user) {
-        console.log(
-          `Password reset requested for non-existent email: ${email}`,
-        );
-        return {
-          message: "If that email exists, a password reset link has been sent",
-        };
+        console.warn(`[AuthService] Forgot password: email not found - ${email}`);
+        throw new Error("No account found with this email.");
       }
 
       // Generate secure random token
@@ -134,7 +129,7 @@ export class AuthService {
         },
       });
 
-      // Queue password reset email for background processing
+      // Queue password reset email only when user exists
       addPasswordResetEmail(email, resetToken).catch((err) => {
         console.error(
           "[AuthService] Failed to queue password reset email:",
