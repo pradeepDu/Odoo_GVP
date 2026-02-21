@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { driversApi } from "@/lib/api";
+import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/StatusPill";
 
@@ -28,7 +29,11 @@ export default function Drivers() {
   const updateMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
       driversApi.update(id, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["drivers"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      showSuccess("Driver updated");
+    },
+    onError: showApiError,
   });
 
   const isExpired = (dateStr: string) => new Date(dateStr) <= new Date();

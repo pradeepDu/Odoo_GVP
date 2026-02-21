@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { FuelService } from "../services/FuelService";
 import { z } from "zod";
+import { FuelService } from "../services/FuelService";
+import { sendSuccess, sendError, zodErrorToMessage } from "../utils/response";
 
 const fuelService = new FuelService();
 
@@ -18,13 +19,13 @@ export class FuelController {
       const body = createSchema.parse(req.body);
       const date = new Date(body.date);
       const log = await fuelService.create({ ...body, date });
-      res.status(201).json(log);
+      sendSuccess(res, log, "Fuel log added", 201);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
+      sendError(res, e instanceof Error ? e.message : "Create failed", 400);
     }
   }
 
@@ -32,13 +33,13 @@ export class FuelController {
     try {
       const vehicleId = Number(req.params.vehicleId);
       if (Number.isNaN(vehicleId)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const list = await fuelService.listByVehicle(vehicleId);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list fuel logs" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list fuel logs", 500);
     }
   }
 
@@ -46,13 +47,13 @@ export class FuelController {
     try {
       const vehicleId = Number(req.params.vehicleId);
       if (Number.isNaN(vehicleId)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const result = await fuelService.getOperationalCostByVehicle(vehicleId);
-      res.json(result);
+      sendSuccess(res, result);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to get cost" });
+      sendError(res, e instanceof Error ? e.message : "Failed to get cost", 500);
     }
   }
 
@@ -60,13 +61,13 @@ export class FuelController {
     try {
       const vehicleId = Number(req.params.vehicleId);
       if (Number.isNaN(vehicleId)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const result = await fuelService.getCostPerKm(vehicleId);
-      res.json(result ?? { costPerKm: 0, totalCost: 0, totalKm: 0 });
+      sendSuccess(res, result ?? { costPerKm: 0, totalCost: 0, totalKm: 0 });
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to get cost per km" });
+      sendError(res, e instanceof Error ? e.message : "Failed to get cost per km", 500);
     }
   }
 }

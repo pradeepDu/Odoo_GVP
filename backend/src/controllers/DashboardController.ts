@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { StatsService } from "../services/StatsService";
+import { sendSuccess, sendError } from "../utils/response";
 
 const statsService = new StatsService();
 
@@ -7,9 +8,9 @@ export class DashboardController {
   async getKPIs(req: Request, res: Response): Promise<void> {
     try {
       const kpis = await statsService.getDashboardKPIs();
-      res.json(kpis);
+      sendSuccess(res, kpis);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to load KPIs" });
+      sendError(res, e instanceof Error ? e.message : "Failed to load KPIs", 500);
     }
   }
 }

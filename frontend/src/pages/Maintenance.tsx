@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { maintenanceApi, vehiclesApi } from "@/lib/api";
+import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Log = {
@@ -37,7 +38,9 @@ export default function Maintenance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["maintenance"] });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      showSuccess("Maintenance log added");
     },
+    onError: showApiError,
   });
 
   const handleSubmit = (e: React.FormEvent) => {

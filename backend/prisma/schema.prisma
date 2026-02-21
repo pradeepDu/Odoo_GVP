@@ -24,15 +24,26 @@ model Role {
 }
 
 model User {
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  password       String
+  name           String?
+  roleId         Int?
+  role           Role?            @relation(fields: [roleId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  driver         Driver?
+  passwordResets PasswordReset[]
+}
+
+model PasswordReset {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
-  roleId    Int?
-  role      Role?    @relation(fields: [roleId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  driver    Driver?
 }
 
 // ---- Assets ----

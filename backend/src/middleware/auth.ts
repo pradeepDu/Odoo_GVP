@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../../config/prisma";
+import { sendError } from "../utils/response";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fleetflow-secret-change-in-production";
 
@@ -17,7 +18,7 @@ export async function authMiddleware(
 ): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or invalid authorization header" });
+    sendError(res, "Missing or invalid authorization header", 401);
     return;
   }
   const token = authHeader.slice(7);
@@ -28,14 +29,14 @@ export async function authMiddleware(
       include: { role: true },
     });
     if (!user) {
-      res.status(401).json({ error: "User not found" });
+      sendError(res, "User not found", 401);
       return;
     }
     req.userId = user.id;
     req.role = user.role?.name ?? undefined;
     next();
   } catch {
-    res.status(401).json({ error: "Invalid or expired token" });
+    sendError(res, "Invalid or expired token", 401);
   }
 }
 

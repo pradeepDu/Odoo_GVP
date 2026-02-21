@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import toast from "react-hot-toast";
 import { vehiclesApi } from "@/lib/api";
+import { showSuccess, showApiError } from "@/lib/toast";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusPill } from "@/components/StatusPill";
 import { FormModal } from "@/components/FormModal";
@@ -64,9 +64,9 @@ export default function Vehicles() {
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       setModalOpen(false);
       reset();
-      toast.success("Vehicle added");
+      showSuccess("Vehicle added");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: showApiError,
   });
 
   const retireMutation = useMutation({
@@ -75,9 +75,9 @@ export default function Vehicles() {
     onSuccess: (_, { retired }) => {
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       setConfirmRetire(null);
-      toast.success(retired ? "Vehicle retired" : "Vehicle restored");
+      showSuccess(retired ? "Vehicle retired" : "Vehicle restored");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: showApiError,
   });
 
   const onRetireConfirm = () => {

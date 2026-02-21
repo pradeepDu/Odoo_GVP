@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tripsApi, vehiclesApi, driversApi } from "@/lib/api";
+import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/StatusPill";
 
@@ -37,18 +38,30 @@ export default function Trips() {
   const createMutation = useMutation({
     mutationFn: (body: { vehicleId: number; driverId: number; cargoWeightKg: number; origin?: string; destination?: string }) =>
       tripsApi.create(body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      showSuccess("Trip created");
+    },
+    onError: showApiError,
   });
 
   const dispatchMutation = useMutation({
     mutationFn: (id: number) => tripsApi.dispatch(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      showSuccess("Trip dispatched");
+    },
+    onError: showApiError,
   });
 
   const completeMutation = useMutation({
     mutationFn: ({ id, endOdometer }: { id: number; endOdometer: number }) =>
       tripsApi.complete(id, endOdometer),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      showSuccess("Trip completed");
+    },
+    onError: showApiError,
   });
 
   const [form, setForm] = useState({

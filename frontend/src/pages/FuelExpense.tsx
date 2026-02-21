@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fuelApi, vehiclesApi } from "@/lib/api";
+import { showSuccess, showApiError } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function FuelExpense() {
@@ -30,7 +31,11 @@ export default function FuelExpense() {
   const createMutation = useMutation({
     mutationFn: (body: { vehicleId: number; liters: number; cost: number; date: string }) =>
       fuelApi.create(body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fuel"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fuel"] });
+      showSuccess("Fuel log added");
+    },
+    onError: showApiError,
   });
 
   const handleSubmit = (e: React.FormEvent) => {

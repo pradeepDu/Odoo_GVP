@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { DriverService } from "../services/DriverService";
 import { z } from "zod";
+import { DriverService } from "../services/DriverService";
+import { sendSuccess, sendError, zodErrorToMessage } from "../utils/response";
 
 const driverService = new DriverService();
 
@@ -27,9 +28,9 @@ export class DriverController {
     try {
       const status = req.query.status as "ON_DUTY" | "OFF_DUTY" | "SUSPENDED" | undefined;
       const list = await driverService.list({ status });
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list drivers" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list drivers", 500);
     }
   }
 
@@ -37,9 +38,9 @@ export class DriverController {
     try {
       const licenseCategory = req.query.licenseCategory as string | undefined;
       const list = await driverService.listAvailableForAssignment(licenseCategory);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list available drivers" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list available drivers", 500);
     }
   }
 
@@ -47,13 +48,13 @@ export class DriverController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid driver id" });
+        sendError(res, "Invalid driver id", 400);
         return;
       }
       const driver = await driverService.getById(id);
-      res.json(driver);
+      sendSuccess(res, driver);
     } catch (e) {
-      res.status(404).json({ error: e instanceof Error ? e.message : "Driver not found" });
+      sendError(res, e instanceof Error ? e.message : "Driver not found", 404);
     }
   }
 
@@ -65,13 +66,13 @@ export class DriverController {
         ...body,
         licenseExpiry,
       });
-      res.status(201).json(driver);
+      sendSuccess(res, driver, "Driver added", 201);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
+      sendError(res, e instanceof Error ? e.message : "Create failed", 400);
     }
   }
 
@@ -79,20 +80,20 @@ export class DriverController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid driver id" });
+        sendError(res, "Invalid driver id", 400);
         return;
       }
       const body = updateSchema.parse(req.body);
       const update: Record<string, unknown> = { ...body };
       if (body.licenseExpiry) update.licenseExpiry = new Date(body.licenseExpiry);
       const driver = await driverService.update(id, update as Parameters<typeof driverService.update>[1]);
-      res.json(driver);
+      sendSuccess(res, driver, "Driver updated");
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Update failed" });
+      sendError(res, e instanceof Error ? e.message : "Update failed", 400);
     }
   }
 }

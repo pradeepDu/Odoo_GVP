@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { MaintenanceService } from "../services/MaintenanceService";
 import { z } from "zod";
+import { MaintenanceService } from "../services/MaintenanceService";
+import { sendSuccess, sendError, zodErrorToMessage } from "../utils/response";
 
 const maintenanceService = new MaintenanceService();
 
@@ -16,9 +17,9 @@ export class MaintenanceController {
     try {
       const vehicleId = req.query.vehicleId ? Number(req.query.vehicleId) : undefined;
       const list = await maintenanceService.listAll({ vehicleId });
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list maintenance logs" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list maintenance logs", 500);
     }
   }
 
@@ -26,13 +27,13 @@ export class MaintenanceController {
     try {
       const vehicleId = Number(req.params.vehicleId);
       if (Number.isNaN(vehicleId)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const list = await maintenanceService.listByVehicle(vehicleId);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list logs" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list logs", 500);
     }
   }
 
@@ -40,13 +41,13 @@ export class MaintenanceController {
     try {
       const body = createSchema.parse(req.body);
       const log = await maintenanceService.create(body);
-      res.status(201).json(log);
+      sendSuccess(res, log, "Maintenance log added", 201);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
+      sendError(res, e instanceof Error ? e.message : "Create failed", 400);
     }
   }
 
@@ -54,13 +55,13 @@ export class MaintenanceController {
     try {
       const vehicleId = Number(req.params.vehicleId);
       if (Number.isNaN(vehicleId)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const vehicle = await maintenanceService.releaseVehicle(vehicleId);
-      res.json(vehicle);
+      sendSuccess(res, vehicle, "Vehicle released from maintenance");
     } catch (e) {
-      res.status(400).json({ error: e instanceof Error ? e.message : "Release failed" });
+      sendError(res, e instanceof Error ? e.message : "Release failed", 400);
     }
   }
 }

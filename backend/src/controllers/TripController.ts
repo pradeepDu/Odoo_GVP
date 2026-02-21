@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { TripService } from "../services/TripService";
 import { z } from "zod";
+import { TripService } from "../services/TripService";
+import { sendSuccess, sendError, zodErrorToMessage } from "../utils/response";
 
 const tripService = new TripService();
 
@@ -22,9 +23,9 @@ export class TripController {
         driverId: driverId ? Number(driverId) : undefined,
       };
       const list = await tripService.list(filters);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list trips" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list trips", 500);
     }
   }
 
@@ -32,13 +33,13 @@ export class TripController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid trip id" });
+        sendError(res, "Invalid trip id", 400);
         return;
       }
       const trip = await tripService.getById(id);
-      res.json(trip);
+      sendSuccess(res, trip);
     } catch (e) {
-      res.status(404).json({ error: e instanceof Error ? e.message : "Trip not found" });
+      sendError(res, e instanceof Error ? e.message : "Trip not found", 404);
     }
   }
 
@@ -46,13 +47,13 @@ export class TripController {
     try {
       const body = createSchema.parse(req.body);
       const result = await tripService.validateCreate(body);
-      res.json(result);
+      sendSuccess(res, result);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Validation failed" });
+      sendError(res, e instanceof Error ? e.message : "Validation failed", 400);
     }
   }
 
@@ -60,13 +61,13 @@ export class TripController {
     try {
       const body = createSchema.parse(req.body);
       const trip = await tripService.create(body);
-      res.status(201).json(trip);
+      sendSuccess(res, trip, "Trip created", 201);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
+      sendError(res, e instanceof Error ? e.message : "Create failed", 400);
     }
   }
 
@@ -74,13 +75,13 @@ export class TripController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid trip id" });
+        sendError(res, "Invalid trip id", 400);
         return;
       }
       const trip = await tripService.dispatch(id);
-      res.json(trip);
+      sendSuccess(res, trip, "Trip dispatched");
     } catch (e) {
-      res.status(400).json({ error: e instanceof Error ? e.message : "Dispatch failed" });
+      sendError(res, e instanceof Error ? e.message : "Dispatch failed", 400);
     }
   }
 
@@ -89,17 +90,17 @@ export class TripController {
       const id = Number(req.params.id);
       const { endOdometer } = req.body;
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid trip id" });
+        sendError(res, "Invalid trip id", 400);
         return;
       }
       if (typeof endOdometer !== "number" || endOdometer < 0) {
-        res.status(400).json({ error: "endOdometer required and must be a positive number" });
+        sendError(res, "endOdometer required and must be a positive number", 400);
         return;
       }
       const trip = await tripService.complete(id, endOdometer);
-      res.json(trip);
+      sendSuccess(res, trip, "Trip completed");
     } catch (e) {
-      res.status(400).json({ error: e instanceof Error ? e.message : "Complete failed" });
+      sendError(res, e instanceof Error ? e.message : "Complete failed", 400);
     }
   }
 
@@ -107,13 +108,13 @@ export class TripController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid trip id" });
+        sendError(res, "Invalid trip id", 400);
         return;
       }
       const trip = await tripService.cancel(id);
-      res.json(trip);
+      sendSuccess(res, trip, "Trip cancelled");
     } catch (e) {
-      res.status(400).json({ error: e instanceof Error ? e.message : "Cancel failed" });
+      sendError(res, e instanceof Error ? e.message : "Cancel failed", 400);
     }
   }
 }

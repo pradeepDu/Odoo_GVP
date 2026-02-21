@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { VehicleService } from "../services/VehicleService";
 import { z } from "zod";
+import { VehicleService } from "../services/VehicleService";
+import { sendSuccess, sendError, zodErrorToMessage } from "../utils/response";
 
 const vehicleService = new VehicleService();
 
@@ -38,9 +39,9 @@ export class VehicleController {
             }
           : undefined;
       const list = await vehicleService.list(filters);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list vehicles" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list vehicles", 500);
     }
   }
 
@@ -48,9 +49,9 @@ export class VehicleController {
     try {
       const vehicleType = req.query.vehicleType as "TRUCK" | "VAN" | "BIKE" | undefined;
       const list = await vehicleService.listAvailableForDispatch(vehicleType);
-      res.json(list);
+      sendSuccess(res, list);
     } catch (e) {
-      res.status(500).json({ error: e instanceof Error ? e.message : "Failed to list available vehicles" });
+      sendError(res, e instanceof Error ? e.message : "Failed to list available vehicles", 500);
     }
   }
 
@@ -58,13 +59,13 @@ export class VehicleController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const vehicle = await vehicleService.getById(id);
-      res.json(vehicle);
+      sendSuccess(res, vehicle);
     } catch (e) {
-      res.status(404).json({ error: e instanceof Error ? e.message : "Vehicle not found" });
+      sendError(res, e instanceof Error ? e.message : "Vehicle not found", 404);
     }
   }
 
@@ -72,13 +73,13 @@ export class VehicleController {
     try {
       const body = createSchema.parse(req.body);
       const vehicle = await vehicleService.create(body);
-      res.status(201).json(vehicle);
+      sendSuccess(res, vehicle, "Vehicle added", 201);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
+      sendError(res, e instanceof Error ? e.message : "Create failed", 400);
     }
   }
 
@@ -86,18 +87,18 @@ export class VehicleController {
     try {
       const id = Number(req.params.id);
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const body = updateSchema.parse(req.body);
       const vehicle = await vehicleService.update(id, body);
-      res.json(vehicle);
+      sendSuccess(res, vehicle, "Vehicle updated");
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: e.errors });
+        sendError(res, zodErrorToMessage(e), 400);
         return;
       }
-      res.status(400).json({ error: e instanceof Error ? e.message : "Update failed" });
+      sendError(res, e instanceof Error ? e.message : "Update failed", 400);
     }
   }
 
@@ -106,13 +107,13 @@ export class VehicleController {
       const id = Number(req.params.id);
       const retired = req.body.retired === true;
       if (Number.isNaN(id)) {
-        res.status(400).json({ error: "Invalid vehicle id" });
+        sendError(res, "Invalid vehicle id", 400);
         return;
       }
       const vehicle = await vehicleService.setOutOfService(id, retired);
-      res.json(vehicle);
+      sendSuccess(res, vehicle, retired ? "Vehicle retired" : "Vehicle restored");
     } catch (e) {
-      res.status(400).json({ error: e instanceof Error ? e.message : "Update failed" });
+      sendError(res, e instanceof Error ? e.message : "Update failed", 400);
     }
   }
 }
