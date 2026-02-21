@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": " pnpm@10.30.0",
+  "packageManager": "pnpm@10.30.0",
   "dependencies": {
     "@prisma/client": "^7.4.1",
     "cors": "^2.8.6",
