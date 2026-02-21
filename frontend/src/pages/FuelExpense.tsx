@@ -2,8 +2,24 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fuelApi, vehiclesApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  NeoBrutalPageHeader,
+  NeoBrutalCard,
+  NeoBrutalCardCompact,
+  NeoBrutalSectionTitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalButton,
+  NeoBrutalStatCard,
+  NeoBrutalTable,
+  NeoBrutalTHead,
+  NeoBrutalTH,
+  NeoBrutalTBody,
+  NeoBrutalTR,
+  NeoBrutalTD,
+} from "@/components/ui/neo-brutual-card";
 
 export default function FuelExpense() {
   const [vehicleId, setVehicleId] = useState("");
@@ -51,23 +67,21 @@ export default function FuelExpense() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Expense & Fuel Logging</h1>
-        <p className="text-muted-foreground text-sm">Financial tracking per asset — Total Operational Cost (Fuel + Maintenance)</p>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Add fuel log</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <DashboardLayout>
+      <div className="space-y-6">
+        <NeoBrutalPageHeader
+          title="Expense & Fuel Logging"
+          subtitle="Financial tracking per asset - Total Operational Cost (Fuel + Maintenance)"
+        />
+
+        <NeoBrutalCard>
+          <NeoBrutalSectionTitle>Add Fuel Log</NeoBrutalSectionTitle>
+          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div>
-              <label className="block text-sm font-medium mb-1">Vehicle</label>
-              <select
+              <NeoBrutalLabel>Vehicle</NeoBrutalLabel>
+              <NeoBrutalSelect
                 value={vehicleId}
                 onChange={(e) => setVehicleId(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 required
               >
                 <option value="">Select</option>
@@ -76,99 +90,97 @@ export default function FuelExpense() {
                     {v.name} ({v.licensePlate})
                   </option>
                 ))}
-              </select>
+              </NeoBrutalSelect>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Liters</label>
-              <input
+              <NeoBrutalLabel>Liters</NeoBrutalLabel>
+              <NeoBrutalInput
                 type="number"
                 min="0"
                 step="0.01"
                 value={liters}
                 onChange={(e) => setLiters(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER LITERS"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Cost</label>
-              <input
+              <NeoBrutalLabel>Cost</NeoBrutalLabel>
+              <NeoBrutalInput
                 type="number"
                 min="0"
                 step="0.01"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER COST"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Date</label>
-              <input
+              <NeoBrutalLabel>Date</NeoBrutalLabel>
+              <NeoBrutalInput
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
             <div className="flex items-end">
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-              >
-                Add log
-              </Button>
+              <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
+                Add Log
+              </NeoBrutalButton>
             </div>
           </form>
-        </CardContent>
-      </Card>
-      {vehicleId && (
-        <>
-          {operationalCost && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Total operational cost (Vehicle #{vehicleId})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Fuel: {operationalCost.fuelCost}</p>
-                <p>Maintenance: {operationalCost.maintenanceCost}</p>
-                <p className="font-semibold">Total: {operationalCost.totalOperationalCost}</p>
-              </CardContent>
-            </Card>
-          )}
-          <Card>
-            <CardHeader>
-              <CardTitle>Fuel logs</CardTitle>
-            </CardHeader>
-            <CardContent>
+        </NeoBrutalCard>
+
+        {vehicleId && (
+          <>
+            {operationalCost && (
+              <div className="grid gap-4 md:grid-cols-3">
+                <NeoBrutalStatCard
+                  label="Fuel Cost"
+                  value={operationalCost.fuelCost}
+                  bg="#60A5FA"
+                />
+                <NeoBrutalStatCard
+                  label="Maintenance Cost"
+                  value={operationalCost.maintenanceCost}
+                  bg="#FBBF24"
+                />
+                <NeoBrutalStatCard
+                  label="Total Operational"
+                  value={operationalCost.totalOperationalCost}
+                  sub={`Vehicle #${vehicleId}`}
+                  bg="#FF6B6B"
+                />
+              </div>
+            )}
+
+            <NeoBrutalCardCompact>
+              <NeoBrutalSectionTitle>Fuel Logs</NeoBrutalSectionTitle>
               {isLoading ? (
-                <p className="text-muted-foreground">Loading…</p>
+                <p className="text-black/60 font-bold text-sm">Loading...</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-2 px-2">Liters</th>
-                        <th className="text-left py-2 px-2">Cost</th>
-                        <th className="text-left py-2 px-2">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(list as { liters: number; cost: number; date: string }[]).map((log, i) => (
-                        <tr key={i} className="border-b border-border/50">
-                          <td className="py-2 px-2">{log.liters}</td>
-                          <td className="py-2 px-2">{log.cost}</td>
-                          <td className="py-2 px-2">{new Date(log.date).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <NeoBrutalTable>
+                  <NeoBrutalTHead>
+                    <NeoBrutalTH>Liters</NeoBrutalTH>
+                    <NeoBrutalTH>Cost</NeoBrutalTH>
+                    <NeoBrutalTH>Date</NeoBrutalTH>
+                  </NeoBrutalTHead>
+                  <NeoBrutalTBody>
+                    {(list as { liters: number; cost: number; date: string }[]).map((log, i) => (
+                      <NeoBrutalTR key={i}>
+                        <NeoBrutalTD>{log.liters}</NeoBrutalTD>
+                        <NeoBrutalTD>{log.cost}</NeoBrutalTD>
+                        <NeoBrutalTD>{new Date(log.date).toLocaleDateString()}</NeoBrutalTD>
+                      </NeoBrutalTR>
+                    ))}
+                  </NeoBrutalTBody>
+                </NeoBrutalTable>
               )}
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+            </NeoBrutalCardCompact>
+          </>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }

@@ -5,11 +5,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { driversApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
-import { PageHeader } from "@/components/PageHeader";
 import { FormModal } from "@/components/FormModal";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusPill } from "@/components/StatusPill";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  NeoBrutalPageHeader,
+  NeoBrutalCardCompact,
+  NeoBrutalSectionTitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalSelectCompact,
+  NeoBrutalButton,
+  NeoBrutalBadge,
+  NeoBrutalTable,
+  NeoBrutalTHead,
+  NeoBrutalTH,
+  NeoBrutalTBody,
+  NeoBrutalTR,
+  NeoBrutalTD,
+} from "@/components/ui/neo-brutual-card";
 
 type Driver = {
   id: number;
@@ -70,138 +84,150 @@ export default function Drivers() {
   const isExpired = (dateStr: string) => new Date(dateStr) <= new Date();
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Driver Performance & Safety Profiles"
-        subtitle="License expiry blocks assignment; trip completion and safety scores"
-        actions={[{ label: "+ Add Driver", onClick: () => setModalOpen(true), primary: true }]}
-      />
-      <div className="flex gap-2">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-        >
-          <option value="">All statuses</option>
-          <option value="ON_DUTY">On Duty</option>
-          <option value="OFF_DUTY">Off Duty</option>
-          <option value="SUSPENDED">Suspended</option>
-        </select>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Drivers</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <NeoBrutalPageHeader
+            title="Driver Performance & Safety"
+            subtitle="License expiry blocks assignment; trip completion and safety scores"
+          />
+          <NeoBrutalButton variant="primary" size="sm" type="button" onClick={() => setModalOpen(true)}>
+            + Add Driver
+          </NeoBrutalButton>
+        </div>
+
+        <div>
+          <NeoBrutalLabel>Filter by Status</NeoBrutalLabel>
+          <NeoBrutalSelectCompact
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">All statuses</option>
+            <option value="ON_DUTY">On Duty</option>
+            <option value="OFF_DUTY">Off Duty</option>
+            <option value="SUSPENDED">Suspended</option>
+          </NeoBrutalSelectCompact>
+        </div>
+
+        <NeoBrutalCardCompact>
+          <NeoBrutalSectionTitle>Drivers</NeoBrutalSectionTitle>
           {isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 px-2">Name</th>
-                    <th className="text-left py-2 px-2">License</th>
-                    <th className="text-left py-2 px-2">Expiry</th>
-                    <th className="text-left py-2 px-2">Category</th>
-                    <th className="text-left py-2 px-2">Status</th>
-                    <th className="text-left py-2 px-2">Completion %</th>
-                    <th className="text-left py-2 px-2">Safety</th>
-                    <th className="text-left py-2 px-2">Set status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((d) => (
-                    <tr key={d.id} className="border-b border-border/50">
-                      <td className="py-2 px-2">{d.name}</td>
-                      <td className="py-2 px-2 font-mono">{d.licenseNumber}</td>
-                      <td className={`py-2 px-2 ${isExpired(d.licenseExpiry) ? "text-destructive" : ""}`}>
-                        {new Date(d.licenseExpiry).toLocaleDateString()}
-                        {isExpired(d.licenseExpiry) && " (Expired)"}
-                      </td>
-                      <td className="py-2 px-2">{d.licenseCategory}</td>
-                      <td className="py-2 px-2">
-                        <StatusPill status={d.status} />
-                      </td>
-                      <td className="py-2 px-2">{d.tripCompletionRate != null ? `${d.tripCompletionRate.toFixed(1)}%` : "—"}</td>
-                      <td className="py-2 px-2">{d.safetyScore != null ? d.safetyScore : "—"}</td>
-                      <td className="py-2 px-2 flex gap-1">
+            <NeoBrutalTable>
+              <NeoBrutalTHead>
+                <NeoBrutalTH>Name</NeoBrutalTH>
+                <NeoBrutalTH>License</NeoBrutalTH>
+                <NeoBrutalTH>Expiry</NeoBrutalTH>
+                <NeoBrutalTH>Category</NeoBrutalTH>
+                <NeoBrutalTH>Status</NeoBrutalTH>
+                <NeoBrutalTH>{"Completion %"}</NeoBrutalTH>
+                <NeoBrutalTH>Safety</NeoBrutalTH>
+                <NeoBrutalTH>Set Status</NeoBrutalTH>
+              </NeoBrutalTHead>
+              <NeoBrutalTBody>
+                {list.map((d) => (
+                  <NeoBrutalTR key={d.id}>
+                    <NeoBrutalTD>{d.name}</NeoBrutalTD>
+                    <NeoBrutalTD className="font-mono">{d.licenseNumber}</NeoBrutalTD>
+                    <NeoBrutalTD className={isExpired(d.licenseExpiry) ? "text-red-600" : ""}>
+                      {new Date(d.licenseExpiry).toLocaleDateString()}
+                      {isExpired(d.licenseExpiry) && (
+                        <NeoBrutalBadge color="#FF6B6B"> Expired</NeoBrutalBadge>
+                      )}
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalBadge color="#E0E7FF">{d.licenseCategory}</NeoBrutalBadge>
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalBadge color={
+                        d.status === "ON_DUTY" ? "#4ADE80" :
+                        d.status === "OFF_DUTY" ? "#FBBF24" : "#FF6B6B"
+                      }>
+                        {d.status}
+                      </NeoBrutalBadge>
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>{d.tripCompletionRate != null ? `${d.tripCompletionRate.toFixed(1)}%` : "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{d.safetyScore != null ? d.safetyScore : "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <div className="flex gap-1 flex-wrap">
                         {d.status !== "ON_DUTY" && (
-                          <Button
+                          <NeoBrutalButton
                             type="button"
                             onClick={() => updateMutation.mutate({ id: d.id, body: { status: "ON_DUTY" } })}
                             variant="secondary"
                             size="xs"
                           >
                             On Duty
-                          </Button>
+                          </NeoBrutalButton>
                         )}
                         {d.status !== "OFF_DUTY" && (
-                          <Button
+                          <NeoBrutalButton
                             type="button"
                             onClick={() => updateMutation.mutate({ id: d.id, body: { status: "OFF_DUTY" } })}
                             variant="outline"
                             size="xs"
                           >
                             Off Duty
-                          </Button>
+                          </NeoBrutalButton>
                         )}
                         {d.status !== "SUSPENDED" && (
-                          <Button
+                          <NeoBrutalButton
                             type="button"
                             onClick={() => updateMutation.mutate({ id: d.id, body: { status: "SUSPENDED" } })}
                             variant="destructive"
                             size="xs"
                           >
                             Suspend
-                          </Button>
+                          </NeoBrutalButton>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </NeoBrutalTD>
+                  </NeoBrutalTR>
+                ))}
+              </NeoBrutalTBody>
+            </NeoBrutalTable>
           )}
-        </CardContent>
-      </Card>
+        </NeoBrutalCardCompact>
+      </div>
+
       <FormModal open={modalOpen} onClose={() => { setModalOpen(false); reset(); }} title="Add Driver" size="md">
-        <form onSubmit={handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
+        <form onSubmit={handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 font-mono">
           <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <input {...register("name")} placeholder="Driver name" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+            <NeoBrutalLabel htmlFor="driverName">Name *</NeoBrutalLabel>
+            <NeoBrutalInput {...register("name")} id="driverName" placeholder="ENTER DRIVER NAME" />
+            {errors.name && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.name.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">License Number *</label>
-            <input {...register("licenseNumber")} placeholder="DL123456" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.licenseNumber && <p className="text-destructive text-xs mt-1">{errors.licenseNumber.message}</p>}
+            <NeoBrutalLabel htmlFor="licenseNumber">License Number *</NeoBrutalLabel>
+            <NeoBrutalInput {...register("licenseNumber")} id="licenseNumber" placeholder="DL123456" />
+            {errors.licenseNumber && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.licenseNumber.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">License Expiry *</label>
-            <input type="date" {...register("licenseExpiry")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.licenseExpiry && <p className="text-destructive text-xs mt-1">{errors.licenseExpiry.message}</p>}
+            <NeoBrutalLabel htmlFor="licenseExpiry">License Expiry *</NeoBrutalLabel>
+            <NeoBrutalInput type="date" {...register("licenseExpiry")} id="licenseExpiry" />
+            {errors.licenseExpiry && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.licenseExpiry.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Category *</label>
-            <select {...register("licenseCategory")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <NeoBrutalLabel htmlFor="licenseCategory">Category *</NeoBrutalLabel>
+            <NeoBrutalSelect {...register("licenseCategory")} id="licenseCategory">
               <option value="">Select category</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="C">C</option>
-            </select>
-            {errors.licenseCategory && <p className="text-destructive text-xs mt-1">{errors.licenseCategory.message}</p>}
+            </NeoBrutalSelect>
+            {errors.licenseCategory && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.licenseCategory.message}</p>}
           </div>
-          <div className="flex gap-2 pt-2">
-            <Button type="submit" disabled={createMutation.isPending}>
+          <div className="flex gap-3 pt-2">
+            <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
               Save
-            </Button>
-            <Button type="button" onClick={() => setModalOpen(false)} variant="outline">
+            </NeoBrutalButton>
+            <NeoBrutalButton type="button" onClick={() => setModalOpen(false)} variant="outline" size="sm">
               Cancel
-            </Button>
+            </NeoBrutalButton>
           </div>
         </form>
       </FormModal>
-    </div>
+    </DashboardLayout>
   );
 }

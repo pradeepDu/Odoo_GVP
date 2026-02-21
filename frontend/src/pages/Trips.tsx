@@ -2,9 +2,27 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tripsApi, vehiclesApi, driversApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/StatusPill";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  NeoBrutalPageHeader,
+  NeoBrutalCard,
+  NeoBrutalCardCompact,
+  NeoBrutalSectionTitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalSelectCompact,
+  NeoBrutalButton,
+  NeoBrutalInputCompact,
+  NeoBrutalBadge,
+  NeoBrutalTable,
+  NeoBrutalTHead,
+  NeoBrutalTH,
+  NeoBrutalTBody,
+  NeoBrutalTR,
+  NeoBrutalTD,
+} from "@/components/ui/neo-brutual-card";
 
 type Trip = {
   id: number;
@@ -91,24 +109,18 @@ export default function Trips() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Trip Dispatcher</h1>
-        <p className="text-muted-foreground text-sm">Create and manage trips</p>
-      </div>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <NeoBrutalPageHeader title="Trip Dispatcher" subtitle="Create and manage trips" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Trip</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreate} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <NeoBrutalCard>
+          <NeoBrutalSectionTitle>Create Trip</NeoBrutalSectionTitle>
+          <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div>
-              <label className="block text-sm font-medium mb-1">Vehicle</label>
-              <select
+              <NeoBrutalLabel>Vehicle</NeoBrutalLabel>
+              <NeoBrutalSelect
                 value={form.vehicleId}
                 onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 required
               >
                 <option value="">Select</option>
@@ -117,14 +129,13 @@ export default function Trips() {
                     {v.name} ({v.licensePlate})
                   </option>
                 ))}
-              </select>
+              </NeoBrutalSelect>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Driver</label>
-              <select
+              <NeoBrutalLabel>Driver</NeoBrutalLabel>
+              <NeoBrutalSelect
                 value={form.driverId}
                 onChange={(e) => setForm((f) => ({ ...f, driverId: e.target.value }))}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 required
               >
                 <option value="">Select</option>
@@ -133,136 +144,136 @@ export default function Trips() {
                     {d.name}
                   </option>
                 ))}
-              </select>
+              </NeoBrutalSelect>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Cargo (kg)</label>
-              <input
+              <NeoBrutalLabel>Cargo (kg)</NeoBrutalLabel>
+              <NeoBrutalInput
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.cargoWeightKg}
                 onChange={(e) => setForm((f) => ({ ...f, cargoWeightKg: e.target.value }))}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER WEIGHT"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Origin</label>
-              <input
+              <NeoBrutalLabel>Origin</NeoBrutalLabel>
+              <NeoBrutalInput
                 value={form.origin}
                 onChange={(e) => setForm((f) => ({ ...f, origin: e.target.value }))}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER ORIGIN"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Destination</label>
-              <input
+              <NeoBrutalLabel>Destination</NeoBrutalLabel>
+              <NeoBrutalInput
                 value={form.destination}
                 onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER DESTINATION"
               />
             </div>
             <div className="sm:col-span-2 lg:col-span-5">
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-              >
-                Create trip (Draft)
-              </Button>
+              <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
+                Create Trip (Draft)
+              </NeoBrutalButton>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </NeoBrutalCard>
 
-      <div className="flex gap-2">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-        >
-          <option value="">All statuses</option>
-          <option value="DRAFT">Draft</option>
-          <option value="DISPATCHED">Dispatched</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-      </div>
+        <div className="flex gap-3 items-end">
+          <div>
+            <NeoBrutalLabel>Filter by Status</NeoBrutalLabel>
+            <NeoBrutalSelectCompact
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All statuses</option>
+              <option value="DRAFT">Draft</option>
+              <option value="DISPATCHED">Dispatched</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </NeoBrutalSelectCompact>
+          </div>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Trips</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <NeoBrutalCardCompact>
+          <NeoBrutalSectionTitle>Trips</NeoBrutalSectionTitle>
           {isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 px-2">ID</th>
-                    <th className="text-left py-2 px-2">Vehicle</th>
-                    <th className="text-left py-2 px-2">Driver</th>
-                    <th className="text-left py-2 px-2">Cargo (kg)</th>
-                    <th className="text-left py-2 px-2">Status</th>
-                    <th className="text-left py-2 px-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((t) => (
-                    <tr key={t.id} className="border-b border-border/50">
-                      <td className="py-2 px-2">{t.id}</td>
-                      <td className="py-2 px-2">{t.vehicle?.name} ({t.vehicle?.licensePlate})</td>
-                      <td className="py-2 px-2">{t.driver?.name}</td>
-                      <td className="py-2 px-2">{t.cargoWeightKg}</td>
-                      <td className="py-2 px-2">
-                        <StatusPill status={t.status} />
-                      </td>
-                      <td className="py-2 px-2 flex gap-1 flex-wrap">
+            <NeoBrutalTable>
+              <NeoBrutalTHead>
+                <NeoBrutalTH>ID</NeoBrutalTH>
+                <NeoBrutalTH>Vehicle</NeoBrutalTH>
+                <NeoBrutalTH>Driver</NeoBrutalTH>
+                <NeoBrutalTH>Cargo (kg)</NeoBrutalTH>
+                <NeoBrutalTH>Status</NeoBrutalTH>
+                <NeoBrutalTH>Actions</NeoBrutalTH>
+              </NeoBrutalTHead>
+              <NeoBrutalTBody>
+                {list.map((t) => (
+                  <NeoBrutalTR key={t.id}>
+                    <NeoBrutalTD>{t.id}</NeoBrutalTD>
+                    <NeoBrutalTD>{t.vehicle?.name} ({t.vehicle?.licensePlate})</NeoBrutalTD>
+                    <NeoBrutalTD>{t.driver?.name}</NeoBrutalTD>
+                    <NeoBrutalTD>{t.cargoWeightKg}</NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalBadge color={
+                        t.status === "COMPLETED" ? "#4ADE80" :
+                        t.status === "DISPATCHED" ? "#60A5FA" :
+                        t.status === "CANCELLED" ? "#FF6B6B" : "#FBBF24"
+                      }>
+                        {t.status}
+                      </NeoBrutalBadge>
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <div className="flex gap-1 flex-wrap items-center">
                         {t.status === "DRAFT" && (
-                          <Button
+                          <NeoBrutalButton
                             type="button"
                             onClick={() => dispatchMutation.mutate(t.id)}
+                            variant="secondary"
                             size="xs"
                           >
                             Dispatch
-                          </Button>
+                          </NeoBrutalButton>
                         )}
                         {(t.status === "DISPATCHED" || t.status === "DRAFT") && (
                           <>
-                            <input
+                            <NeoBrutalInputCompact
                               type="number"
                               min="0"
-                              placeholder="End odometer"
+                              placeholder="End odo"
                               value={completeOdometer[t.id] ?? ""}
                               onChange={(e) =>
                                 setCompleteOdometer((o) => ({ ...o, [t.id]: e.target.value }))
                               }
-                              className="w-24 rounded border border-input bg-background px-2 py-1 text-xs"
+                              className="w-20"
                             />
-                            <Button
+                            <NeoBrutalButton
                               type="button"
                               onClick={() => {
                                 const end = Number(completeOdometer[t.id]);
                                 if (!Number.isNaN(end)) completeMutation.mutate({ id: t.id, endOdometer: end });
                               }}
-                              variant="secondary"
+                              variant="outline"
                               size="xs"
                             >
                               Complete
-                            </Button>
+                            </NeoBrutalButton>
                           </>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </NeoBrutalTD>
+                  </NeoBrutalTR>
+                ))}
+              </NeoBrutalTBody>
+            </NeoBrutalTable>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </NeoBrutalCardCompact>
+      </div>
+    </DashboardLayout>
   );
 }

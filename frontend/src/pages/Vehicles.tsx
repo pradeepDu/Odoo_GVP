@@ -5,13 +5,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { vehiclesApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
-import { PageHeader } from "@/components/PageHeader";
-import { StatusPill } from "@/components/StatusPill";
 import { FormModal } from "@/components/FormModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  NeoBrutalPageHeader,
+  NeoBrutalCardCompact,
+  NeoBrutalSectionTitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalSelectCompact,
+  NeoBrutalButton,
+  NeoBrutalBadge,
+  NeoBrutalTable,
+  NeoBrutalTHead,
+  NeoBrutalTH,
+  NeoBrutalTBody,
+  NeoBrutalTR,
+  NeoBrutalTD,
+} from "@/components/ui/neo-brutual-card";
 
 type Vehicle = {
   id: number;
@@ -86,139 +99,142 @@ export default function Vehicles() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Vehicle Registry"
-        subtitle="CRUD for physical assets"
-        actions={[{ label: "+ New Vehicle", onClick: () => setModalOpen(true), primary: true }]}
-      />
-      <div className="flex flex-wrap gap-2">
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className={cn(
-            "rounded-md border border-input bg-background px-3 py-1.5 text-sm",
-            "focus:outline-none focus:ring-2 focus:ring-ring"
-          )}
-        >
-          <option value="">All types</option>
-          <option value="TRUCK">Truck</option>
-          <option value="VAN">Van</option>
-          <option value="BIKE">Bike</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className={cn(
-            "rounded-md border border-input bg-background px-3 py-1.5 text-sm",
-            "focus:outline-none focus:ring-2 focus:ring-ring"
-          )}
-        >
-          <option value="">All statuses</option>
-          <option value="AVAILABLE">Available</option>
-          <option value="ON_TRIP">On Trip</option>
-          <option value="IN_SHOP">In Shop</option>
-          <option value="OUT_OF_SERVICE">Out of Service</option>
-        </select>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Vehicles</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <NeoBrutalPageHeader title="Vehicle Registry" subtitle="CRUD for physical assets" />
+          <NeoBrutalButton variant="primary" size="sm" type="button" onClick={() => setModalOpen(true)}>
+            + New Vehicle
+          </NeoBrutalButton>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <div>
+            <NeoBrutalLabel>Type</NeoBrutalLabel>
+            <NeoBrutalSelectCompact
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="">All types</option>
+              <option value="TRUCK">Truck</option>
+              <option value="VAN">Van</option>
+              <option value="BIKE">Bike</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Status</NeoBrutalLabel>
+            <NeoBrutalSelectCompact
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All statuses</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="ON_TRIP">On Trip</option>
+              <option value="IN_SHOP">In Shop</option>
+              <option value="OUT_OF_SERVICE">Out of Service</option>
+            </NeoBrutalSelectCompact>
+          </div>
+        </div>
+
+        <NeoBrutalCardCompact>
+          <NeoBrutalSectionTitle>Vehicles</NeoBrutalSectionTitle>
           {isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 px-2">Name</th>
-                    <th className="text-left py-2 px-2">Plate</th>
-                    <th className="text-left py-2 px-2">Type</th>
-                    <th className="text-left py-2 px-2">Capacity (kg)</th>
-                    <th className="text-left py-2 px-2">Odometer</th>
-                    <th className="text-left py-2 px-2">Status</th>
-                    <th className="text-left py-2 px-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((v) => (
-                    <tr key={v.id} className="border-b border-border/50">
-                      <td className="py-2 px-2">{v.name}</td>
-                      <td className="py-2 px-2 font-mono">{v.licensePlate}</td>
-                      <td className="py-2 px-2">{v.vehicleType}</td>
-                      <td className="py-2 px-2">{v.maxCapacityKg}</td>
-                      <td className="py-2 px-2">{v.odometer} km</td>
-                      <td className="py-2 px-2">
-                        <StatusPill status={v.status} />
-                      </td>
-                      <td className="py-2 px-2">
-                        <Button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmRetire({ id: v.id, retired: !v.retired });
-                          }}
-                          variant={v.retired ? "ghost" : "destructive"}
-                          size="xs"
-                        >
-                          {v.retired ? "Restore" : "Retire"}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <NeoBrutalTable>
+              <NeoBrutalTHead>
+                <NeoBrutalTH>Name</NeoBrutalTH>
+                <NeoBrutalTH>Plate</NeoBrutalTH>
+                <NeoBrutalTH>Type</NeoBrutalTH>
+                <NeoBrutalTH>Capacity (kg)</NeoBrutalTH>
+                <NeoBrutalTH>Odometer</NeoBrutalTH>
+                <NeoBrutalTH>Status</NeoBrutalTH>
+                <NeoBrutalTH>Actions</NeoBrutalTH>
+              </NeoBrutalTHead>
+              <NeoBrutalTBody>
+                {list.map((v) => (
+                  <NeoBrutalTR key={v.id}>
+                    <NeoBrutalTD>{v.name}</NeoBrutalTD>
+                    <NeoBrutalTD className="font-mono">{v.licensePlate}</NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalBadge color="#E0E7FF">{v.vehicleType}</NeoBrutalBadge>
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>{v.maxCapacityKg}</NeoBrutalTD>
+                    <NeoBrutalTD>{v.odometer} km</NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalBadge color={
+                        v.status === "AVAILABLE" ? "#4ADE80" :
+                        v.status === "ON_TRIP" ? "#60A5FA" :
+                        v.status === "IN_SHOP" ? "#FBBF24" : "#FF6B6B"
+                      }>
+                        {v.status}
+                      </NeoBrutalBadge>
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>
+                      <NeoBrutalButton
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmRetire({ id: v.id, retired: !v.retired });
+                        }}
+                        variant={v.retired ? "outline" : "destructive"}
+                        size="xs"
+                      >
+                        {v.retired ? "Restore" : "Retire"}
+                      </NeoBrutalButton>
+                    </NeoBrutalTD>
+                  </NeoBrutalTR>
+                ))}
+              </NeoBrutalTBody>
+            </NeoBrutalTable>
           )}
-        </CardContent>
-      </Card>
+        </NeoBrutalCardCompact>
+      </div>
 
       <FormModal open={modalOpen} onClose={() => { setModalOpen(false); reset(); }} title="New Vehicle Registration" size="lg">
-        <form onSubmit={handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
+        <form onSubmit={handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 font-mono">
           <div>
-            <label className="block text-sm font-medium mb-1">License Plate *</label>
-            <input {...register("licensePlate")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.licensePlate && <p className="text-destructive text-xs mt-1">{errors.licensePlate.message}</p>}
+            <NeoBrutalLabel htmlFor="licensePlate">License Plate *</NeoBrutalLabel>
+            <NeoBrutalInput {...register("licensePlate")} id="licensePlate" placeholder="ENTER PLATE" />
+            {errors.licensePlate && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.licensePlate.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <input {...register("name")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+            <NeoBrutalLabel htmlFor="name">Name *</NeoBrutalLabel>
+            <NeoBrutalInput {...register("name")} id="name" placeholder="ENTER NAME" />
+            {errors.name && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.name.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Model</label>
-            <input {...register("model")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <NeoBrutalLabel htmlFor="model">Model</NeoBrutalLabel>
+            <NeoBrutalInput {...register("model")} id="model" placeholder="ENTER MODEL" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Max Payload (kg) *</label>
-            <input type="number" {...register("maxCapacityKg")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            {errors.maxCapacityKg && <p className="text-destructive text-xs mt-1">{errors.maxCapacityKg.message}</p>}
+            <NeoBrutalLabel htmlFor="maxCapacityKg">Max Payload (kg) *</NeoBrutalLabel>
+            <NeoBrutalInput type="number" {...register("maxCapacityKg")} id="maxCapacityKg" placeholder="ENTER CAPACITY" />
+            {errors.maxCapacityKg && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.maxCapacityKg.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Initial Odometer (km)</label>
-            <input type="number" {...register("odometer")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <NeoBrutalLabel htmlFor="odometer">Initial Odometer (km)</NeoBrutalLabel>
+            <NeoBrutalInput type="number" {...register("odometer")} id="odometer" placeholder="ENTER ODOMETER" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Type *</label>
-            <select {...register("vehicleType")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <NeoBrutalLabel htmlFor="vehicleType">Type *</NeoBrutalLabel>
+            <NeoBrutalSelect {...register("vehicleType")} id="vehicleType">
               <option value="VAN">Van</option>
               <option value="TRUCK">Truck</option>
               <option value="BIKE">Bike</option>
-            </select>
+            </NeoBrutalSelect>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Region</label>
-            <input {...register("region")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <NeoBrutalLabel htmlFor="region">Region</NeoBrutalLabel>
+            <NeoBrutalInput {...register("region")} id="region" placeholder="ENTER REGION" />
           </div>
-          <div className="flex gap-2 pt-2">
-            <Button type="submit" disabled={createMutation.isPending}>
+          <div className="flex gap-3 pt-2">
+            <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
               Save
-            </Button>
-            <Button type="button" onClick={() => setModalOpen(false)} variant="outline">
+            </NeoBrutalButton>
+            <NeoBrutalButton type="button" onClick={() => setModalOpen(false)} variant="outline" size="sm">
               Cancel
-            </Button>
+            </NeoBrutalButton>
           </div>
         </form>
       </FormModal>
@@ -232,6 +248,6 @@ export default function Vehicles() {
         variant="danger"
         onConfirm={onRetireConfirm}
       />
-    </div>
+    </DashboardLayout>
   );
 }

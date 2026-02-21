@@ -2,8 +2,24 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { maintenanceApi, vehiclesApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  NeoBrutalPageHeader,
+  NeoBrutalCard,
+  NeoBrutalCardCompact,
+  NeoBrutalSectionTitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalSelectCompact,
+  NeoBrutalButton,
+  NeoBrutalTable,
+  NeoBrutalTHead,
+  NeoBrutalTH,
+  NeoBrutalTBody,
+  NeoBrutalTR,
+  NeoBrutalTD,
+} from "@/components/ui/neo-brutual-card";
 
 type Log = {
   id: number;
@@ -60,23 +76,21 @@ export default function Maintenance() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Maintenance & Service Logs</h1>
-        <p className="text-muted-foreground text-sm">Vehicle health tracking — adding a log sets vehicle to In Shop</p>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Add service log</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <DashboardLayout>
+      <div className="space-y-6">
+        <NeoBrutalPageHeader
+          title="Maintenance & Service Logs"
+          subtitle="Vehicle health tracking - adding a log sets vehicle to In Shop"
+        />
+
+        <NeoBrutalCard>
+          <NeoBrutalSectionTitle>Add Service Log</NeoBrutalSectionTitle>
+          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Vehicle</label>
-              <select
+              <NeoBrutalLabel>Vehicle</NeoBrutalLabel>
+              <NeoBrutalSelect
                 value={vehicleId}
                 onChange={(e) => setVehicleId(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 required
               >
                 <option value="">Select</option>
@@ -85,101 +99,91 @@ export default function Maintenance() {
                     {v.name} ({v.licensePlate})
                   </option>
                 ))}
-              </select>
+              </NeoBrutalSelect>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <input
+              <NeoBrutalLabel>Description</NeoBrutalLabel>
+              <NeoBrutalInput
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER DESCRIPTION"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Service type</label>
-              <input
+              <NeoBrutalLabel>Service Type</NeoBrutalLabel>
+              <NeoBrutalInput
                 value={serviceType}
                 onChange={(e) => setServiceType(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER TYPE"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Cost</label>
-              <input
+              <NeoBrutalLabel>Cost</NeoBrutalLabel>
+              <NeoBrutalInput
                 type="number"
                 min="0"
                 step="0.01"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="ENTER COST"
               />
             </div>
             <div>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-              >
-                Add log
-              </Button>
+              <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
+                Add Log
+              </NeoBrutalButton>
             </div>
           </form>
-        </CardContent>
-      </Card>
-      <div>
-        <label className="block text-sm font-medium mb-1">Filter by vehicle</label>
-        <select
-          value={vehicleId}
-          onChange={(e) => setVehicleId(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-        >
-          <option value="">All vehicles</option>
-          {(vehicles as { id: number; name: string; licensePlate: string }[]).map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name} ({v.licensePlate})
-            </option>
-          ))}
-        </select>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Service logs</CardTitle>
-        </CardHeader>
-        <CardContent>
+        </NeoBrutalCard>
+
+        <div>
+          <NeoBrutalLabel>Filter by Vehicle</NeoBrutalLabel>
+          <NeoBrutalSelectCompact
+            value={vehicleId}
+            onChange={(e) => setVehicleId(e.target.value)}
+          >
+            <option value="">All vehicles</option>
+            {(vehicles as { id: number; name: string; licensePlate: string }[]).map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.name} ({v.licensePlate})
+              </option>
+            ))}
+          </NeoBrutalSelectCompact>
+        </div>
+
+        <NeoBrutalCardCompact>
+          <NeoBrutalSectionTitle>Service Logs</NeoBrutalSectionTitle>
           {isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 px-2">Vehicle</th>
-                    <th className="text-left py-2 px-2">Description</th>
-                    <th className="text-left py-2 px-2">Type</th>
-                    <th className="text-left py-2 px-2">Cost</th>
-                    <th className="text-left py-2 px-2">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((log) => (
-                    <tr key={log.id} className="border-b border-border/50">
-                      <td className="py-2 px-2">
-                        {log.vehicle
-                          ? `${log.vehicle.name} (${log.vehicle.licensePlate})`
-                          : `Vehicle #${log.vehicleId}`}
-                      </td>
-                      <td className="py-2 px-2">{log.description}</td>
-                      <td className="py-2 px-2">{log.serviceType ?? "—"}</td>
-                      <td className="py-2 px-2">{log.cost != null ? log.cost : "—"}</td>
-                      <td className="py-2 px-2">{new Date(log.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <NeoBrutalTable>
+              <NeoBrutalTHead>
+                <NeoBrutalTH>Vehicle</NeoBrutalTH>
+                <NeoBrutalTH>Description</NeoBrutalTH>
+                <NeoBrutalTH>Type</NeoBrutalTH>
+                <NeoBrutalTH>Cost</NeoBrutalTH>
+                <NeoBrutalTH>Date</NeoBrutalTH>
+              </NeoBrutalTHead>
+              <NeoBrutalTBody>
+                {list.map((log) => (
+                  <NeoBrutalTR key={log.id}>
+                    <NeoBrutalTD>
+                      {log.vehicle
+                        ? `${log.vehicle.name} (${log.vehicle.licensePlate})`
+                        : `Vehicle #${log.vehicleId}`}
+                    </NeoBrutalTD>
+                    <NeoBrutalTD>{log.description}</NeoBrutalTD>
+                    <NeoBrutalTD>{log.serviceType ?? "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{log.cost != null ? log.cost : "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{new Date(log.createdAt).toLocaleDateString()}</NeoBrutalTD>
+                  </NeoBrutalTR>
+                ))}
+              </NeoBrutalTBody>
+            </NeoBrutalTable>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </NeoBrutalCardCompact>
+      </div>
+    </DashboardLayout>
   );
 }
