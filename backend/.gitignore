@@ -26,3 +26,5 @@ dist-ssr
 # env file
 *.env
 /generated/prisma
+backend-live.log
+logs.txt
