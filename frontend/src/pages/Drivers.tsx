@@ -46,6 +46,10 @@ const newDriverSchema = z.object({
 type NewDriverForm = z.infer<typeof newDriverSchema>;
 
 export default function Drivers() {
+  const [search, setSearch] = useState("");
+  const [groupBy, setGroupBy] = useState("");
+  const [filter, setFilter] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -82,31 +86,54 @@ export default function Drivers() {
   });
 
   const isExpired = (dateStr: string) => new Date(dateStr) <= new Date();
+  const complaints = (d: Driver) => (d as { complaints?: number }).complaints ?? 0;
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <NeoBrutalPageHeader
-            title="Driver Performance & Safety"
-            subtitle="License expiry blocks assignment; trip completion and safety scores"
+            title="Driver Performance & Safety Profiles"
+            subtitle="Legal to drive, performance scores; expired license locks assignment"
           />
           <NeoBrutalButton variant="primary" size="sm" type="button" onClick={() => setModalOpen(true)}>
             + Add Driver
           </NeoBrutalButton>
         </div>
 
-        <div>
-          <NeoBrutalLabel>Filter by Status</NeoBrutalLabel>
-          <NeoBrutalSelectCompact
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">All statuses</option>
-            <option value="ON_DUTY">On Duty</option>
-            <option value="OFF_DUTY">Off Duty</option>
-            <option value="SUSPENDED">Suspended</option>
-          </NeoBrutalSelectCompact>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[180px]">
+            <NeoBrutalLabel>Search</NeoBrutalLabel>
+            <NeoBrutalInput
+              type="search"
+              placeholder="Search bar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <NeoBrutalLabel>Group by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+              <option value="">Group by</option>
+              <option value="status">Duty Status</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Filter</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={filter || statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="">Filter</option>
+              <option value="ON_DUTY">On Duty</option>
+              <option value="OFF_DUTY">Taking a Break</option>
+              <option value="SUSPENDED">Suspended</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Sort by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="">Sort by...</option>
+              <option value="safety">Safety Score</option>
+            </NeoBrutalSelectCompact>
+          </div>
         </div>
 
         <NeoBrutalCardCompact>
@@ -117,40 +144,35 @@ export default function Drivers() {
             <NeoBrutalTable>
               <NeoBrutalTHead>
                 <NeoBrutalTH>Name</NeoBrutalTH>
-                <NeoBrutalTH>License</NeoBrutalTH>
+                <NeoBrutalTH>License#</NeoBrutalTH>
                 <NeoBrutalTH>Expiry</NeoBrutalTH>
-                <NeoBrutalTH>Category</NeoBrutalTH>
-                <NeoBrutalTH>Status</NeoBrutalTH>
-                <NeoBrutalTH>{"Completion %"}</NeoBrutalTH>
-                <NeoBrutalTH>Safety</NeoBrutalTH>
-                <NeoBrutalTH>Set Status</NeoBrutalTH>
+                <NeoBrutalTH>Completion Rate</NeoBrutalTH>
+                <NeoBrutalTH>Safety Score</NeoBrutalTH>
+                <NeoBrutalTH>Complaints</NeoBrutalTH>
+                <NeoBrutalTH>Duty Status</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
                 {list.map((d) => (
                   <NeoBrutalTR key={d.id}>
                     <NeoBrutalTD>{d.name}</NeoBrutalTD>
                     <NeoBrutalTD className="font-mono">{d.licenseNumber}</NeoBrutalTD>
-                    <NeoBrutalTD className={isExpired(d.licenseExpiry) ? "text-red-600" : ""}>
-                      {new Date(d.licenseExpiry).toLocaleDateString()}
+                    <NeoBrutalTD className={isExpired(d.licenseExpiry) ? "text-red-600 font-bold" : ""}>
+                      {new Date(d.licenseExpiry).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                       {isExpired(d.licenseExpiry) && (
-                        <NeoBrutalBadge color="#FF6B6B"> Expired</NeoBrutalBadge>
+                        <NeoBrutalBadge color="#FF6B6B"> Locked</NeoBrutalBadge>
                       )}
                     </NeoBrutalTD>
-                    <NeoBrutalTD>
-                      <NeoBrutalBadge color="#E0E7FF">{d.licenseCategory}</NeoBrutalBadge>
-                    </NeoBrutalTD>
+                    <NeoBrutalTD>{d.tripCompletionRate != null ? `${d.tripCompletionRate.toFixed(0)}%` : "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{d.safetyScore != null ? `${d.safetyScore}%` : "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{complaints(d)}</NeoBrutalTD>
                     <NeoBrutalTD>
                       <NeoBrutalBadge color={
                         d.status === "ON_DUTY" ? "#4ADE80" :
                         d.status === "OFF_DUTY" ? "#FBBF24" : "#FF6B6B"
                       }>
-                        {d.status}
+                        {d.status.replace("_", " ")}
                       </NeoBrutalBadge>
-                    </NeoBrutalTD>
-                    <NeoBrutalTD>{d.tripCompletionRate != null ? `${d.tripCompletionRate.toFixed(1)}%` : "—"}</NeoBrutalTD>
-                    <NeoBrutalTD>{d.safetyScore != null ? d.safetyScore : "—"}</NeoBrutalTD>
-                    <NeoBrutalTD>
-                      <div className="flex gap-1 flex-wrap">
+                      <div className="flex gap-1 flex-wrap mt-1">
                         {d.status !== "ON_DUTY" && (
                           <NeoBrutalButton
                             type="button"
@@ -168,7 +190,7 @@ export default function Drivers() {
                             variant="outline"
                             size="xs"
                           >
-                            Off Duty
+                            Break
                           </NeoBrutalButton>
                         )}
                         {d.status !== "SUSPENDED" && (

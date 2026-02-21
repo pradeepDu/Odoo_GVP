@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { dashboardApi, tripsApi } from "@/lib/api";
@@ -19,9 +20,12 @@ import {
   NeoBrutalTBody,
   NeoBrutalTR,
   NeoBrutalTD,
+  NeoBrutalInput,
+  NeoBrutalSelectCompact,
+  NeoBrutalLabel,
 } from "@/components/ui/neo-brutual-card";
 
-type TripRow = {  
+type TripRow = {
   id: number;
   cargoWeightKg: number;
   status: string;
@@ -34,6 +38,10 @@ type TripRow = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { selectedTripId, setSelectedTripId } = useUIStore();
+  const [search, setSearch] = useState("");
+  const [groupBy, setGroupBy] = useState("");
+  const [filter, setFilter] = useState("");
+  const [sortBy, setSortBy] = useState("");
 
   const { data: kpis, isLoading: kpisLoading, error } = useQuery({
     queryKey: ["dashboard", "kpis"],
@@ -58,7 +66,10 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <NeoBrutalPageHeader title="Command Center" subtitle="High-level fleet oversight" />
+          <NeoBrutalPageHeader
+            title="Main Dashboard"
+            subtitle="A quick, all-in-one screen to see what's happening with your fleet"
+          />
           <div className="flex gap-2">
             <NeoBrutalButton variant="primary" size="sm" type="button" onClick={() => navigate("/trips")}>
               New Trip
@@ -66,6 +77,42 @@ export default function Dashboard() {
             <NeoBrutalButton variant="outline" size="sm" type="button" onClick={() => navigate("/vehicles")}>
               New Vehicle
             </NeoBrutalButton>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[180px]">
+            <NeoBrutalLabel>Search</NeoBrutalLabel>
+            <NeoBrutalInput
+              type="search"
+              placeholder="Search bar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <NeoBrutalLabel>Group by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+              <option value="">Group by</option>
+              <option value="vehicleType">Vehicle Type</option>
+              <option value="status">Status</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Filter</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="">Filter</option>
+              <option value="ready">Ready</option>
+              <option value="busy">Busy</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Sort by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="">Sort by...</option>
+              <option value="trip">Trip</option>
+              <option value="status">Status</option>
+            </NeoBrutalSelectCompact>
           </div>
         </div>
 
@@ -78,7 +125,7 @@ export default function Dashboard() {
             icon={<Truck size={28} />}
           />
           <NeoBrutalStatCard
-            label="Maintenance Alerts"
+            label="Maintenance Alert"
             value={kpis?.maintenanceAlertsCount ?? 0}
             sub="In Shop"
             bg="#FBBF24"
@@ -101,7 +148,7 @@ export default function Dashboard() {
         </div>
 
         <NeoBrutalCardCompact>
-          <NeoBrutalSectionTitle>Recent Trips</NeoBrutalSectionTitle>
+          <NeoBrutalSectionTitle>Trips</NeoBrutalSectionTitle>
           {tripsLoading ? (
             <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
@@ -114,7 +161,7 @@ export default function Dashboard() {
               </NeoBrutalTHead>
               <NeoBrutalTBody>
                 {trips.slice(0, 5).map((t) => (
-                  <NeoBrutalTR key={t.id}>
+                  <NeoBrutalTR key={t.id} onClick={() => setSelectedTripId(t.id)}>
                     <NeoBrutalTD>#{t.id}</NeoBrutalTD>
                     <NeoBrutalTD>{t.vehicle ? `${t.vehicle.name} (${t.vehicle.licensePlate})` : "—"}</NeoBrutalTD>
                     <NeoBrutalTD>{t.driver?.name ?? "—"}</NeoBrutalTD>
@@ -142,7 +189,7 @@ export default function Dashboard() {
         width="md"
       >
         {selectedTrip && (
-          <div className="space-y-3 text-sm font-bold font-mono text-black">
+          <div className="space-y-3 text-sm font-bold font-mono text-black border-l-4 border-black pl-2">
             <p><span className="text-black/50 uppercase text-xs">Vehicle:</span> {(selectedTrip as { vehicle?: { name: string; licensePlate: string } }).vehicle?.name} ({(selectedTrip as { vehicle?: { licensePlate: string } }).vehicle?.licensePlate})</p>
             <p><span className="text-black/50 uppercase text-xs">Driver:</span> {(selectedTrip as { driver?: { name: string } }).driver?.name}</p>
             <p><span className="text-black/50 uppercase text-xs">Status:</span> <StatusPill status={(selectedTrip as { status: string }).status} /></p>

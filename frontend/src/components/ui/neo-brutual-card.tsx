@@ -265,8 +265,26 @@ export function NeoBrutalTBody({ children }: { children: React.ReactNode }) {
   return <tbody>{children}</tbody>;
 }
 
-export function NeoBrutalTR({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <tr className={`border-b-2 border-black/20 hover:bg-yellow-50 transition-colors ${className}`}>{children}</tr>;
+export function NeoBrutalTR({
+  children,
+  className = "",
+  onClick,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <tr
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
+      className={`border-b-2 border-black/20 hover:bg-yellow-50 transition-colors ${className} ${onClick ? "cursor-pointer" : ""}`}
+    >
+      {children}
+    </tr>
+  );
 }
 
 export function NeoBrutalTD({ children, className = "" }: { children: React.ReactNode; className?: string }) {

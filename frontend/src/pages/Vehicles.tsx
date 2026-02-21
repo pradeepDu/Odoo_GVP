@@ -52,6 +52,10 @@ const newVehicleSchema = z.object({
 type NewVehicleForm = z.infer<typeof newVehicleSchema>;
 
 export default function Vehicles() {
+  const [search, setSearch] = useState("");
+  const [groupBy, setGroupBy] = useState("");
+  const [filter, setFilter] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -102,36 +106,54 @@ export default function Vehicles() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <NeoBrutalPageHeader title="Vehicle Registry" subtitle="CRUD for physical assets" />
+          <NeoBrutalPageHeader
+            title="Vehicle Registry (Asset Management)"
+            subtitle="Your digital garage — add, view, change, or remove every vehicle"
+          />
           <NeoBrutalButton variant="primary" size="sm" type="button" onClick={() => setModalOpen(true)}>
             + New Vehicle
           </NeoBrutalButton>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[180px]">
+            <NeoBrutalLabel>Search</NeoBrutalLabel>
+            <NeoBrutalInput
+              type="search"
+              placeholder="Search for..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <NeoBrutalLabel>Group by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+              <option value="">Group by</option>
+              <option value="type">Vehicle Type</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Filter</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={filter || statusFilter} onChange={(e) => { setFilter(e.target.value); setStatusFilter(e.target.value); }}>
+              <option value="">Filter</option>
+              <option value="AVAILABLE">Ready</option>
+              <option value="ON_TRIP">Busy</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Sort by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="">Sort by...</option>
+              <option value="odometer">Odometer</option>
+            </NeoBrutalSelectCompact>
+          </div>
           <div>
             <NeoBrutalLabel>Type</NeoBrutalLabel>
-            <NeoBrutalSelectCompact
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
+            <NeoBrutalSelectCompact value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">All types</option>
               <option value="TRUCK">Truck</option>
               <option value="VAN">Van</option>
               <option value="BIKE">Bike</option>
-            </NeoBrutalSelectCompact>
-          </div>
-          <div>
-            <NeoBrutalLabel>Status</NeoBrutalLabel>
-            <NeoBrutalSelectCompact
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All statuses</option>
-              <option value="AVAILABLE">Available</option>
-              <option value="ON_TRIP">On Trip</option>
-              <option value="IN_SHOP">In Shop</option>
-              <option value="OUT_OF_SERVICE">Out of Service</option>
             </NeoBrutalSelectCompact>
           </div>
         </div>
@@ -143,24 +165,26 @@ export default function Vehicles() {
           ) : (
             <NeoBrutalTable>
               <NeoBrutalTHead>
-                <NeoBrutalTH>Name</NeoBrutalTH>
+                <NeoBrutalTH>NO</NeoBrutalTH>
                 <NeoBrutalTH>Plate</NeoBrutalTH>
+                <NeoBrutalTH>Model</NeoBrutalTH>
                 <NeoBrutalTH>Type</NeoBrutalTH>
-                <NeoBrutalTH>Capacity (kg)</NeoBrutalTH>
+                <NeoBrutalTH>Capacity</NeoBrutalTH>
                 <NeoBrutalTH>Odometer</NeoBrutalTH>
                 <NeoBrutalTH>Status</NeoBrutalTH>
                 <NeoBrutalTH>Actions</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
-                {list.map((v) => (
+                {list.map((v, idx) => (
                   <NeoBrutalTR key={v.id}>
-                    <NeoBrutalTD>{v.name}</NeoBrutalTD>
+                    <NeoBrutalTD>{idx + 1}</NeoBrutalTD>
                     <NeoBrutalTD className="font-mono">{v.licensePlate}</NeoBrutalTD>
+                    <NeoBrutalTD>{v.model ?? v.name}</NeoBrutalTD>
                     <NeoBrutalTD>
                       <NeoBrutalBadge color="#E0E7FF">{v.vehicleType}</NeoBrutalBadge>
                     </NeoBrutalTD>
-                    <NeoBrutalTD>{v.maxCapacityKg}</NeoBrutalTD>
-                    <NeoBrutalTD>{v.odometer} km</NeoBrutalTD>
+                    <NeoBrutalTD>{v.maxCapacityKg} ton</NeoBrutalTD>
+                    <NeoBrutalTD>{v.odometer}</NeoBrutalTD>
                     <NeoBrutalTD>
                       <NeoBrutalBadge color={
                         v.status === "AVAILABLE" ? "#4ADE80" :
@@ -180,7 +204,7 @@ export default function Vehicles() {
                         variant={v.retired ? "outline" : "destructive"}
                         size="xs"
                       >
-                        {v.retired ? "Restore" : "Retire"}
+                        {v.retired ? "Restore" : "×"}
                       </NeoBrutalButton>
                     </NeoBrutalTD>
                   </NeoBrutalTR>
@@ -194,35 +218,35 @@ export default function Vehicles() {
       <FormModal open={modalOpen} onClose={() => { setModalOpen(false); reset(); }} title="New Vehicle Registration" size="lg">
         <form onSubmit={handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 font-mono">
           <div>
-            <NeoBrutalLabel htmlFor="licensePlate">License Plate *</NeoBrutalLabel>
+            <NeoBrutalLabel htmlFor="licensePlate">License Plate: *</NeoBrutalLabel>
             <NeoBrutalInput {...register("licensePlate")} id="licensePlate" placeholder="ENTER PLATE" />
             {errors.licensePlate && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.licensePlate.message}</p>}
           </div>
           <div>
-            <NeoBrutalLabel htmlFor="name">Name *</NeoBrutalLabel>
-            <NeoBrutalInput {...register("name")} id="name" placeholder="ENTER NAME" />
-            {errors.name && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.name.message}</p>}
-          </div>
-          <div>
-            <NeoBrutalLabel htmlFor="model">Model</NeoBrutalLabel>
-            <NeoBrutalInput {...register("model")} id="model" placeholder="ENTER MODEL" />
-          </div>
-          <div>
-            <NeoBrutalLabel htmlFor="maxCapacityKg">Max Payload (kg) *</NeoBrutalLabel>
+            <NeoBrutalLabel htmlFor="maxCapacityKg">Max Payload: * (kg)</NeoBrutalLabel>
             <NeoBrutalInput type="number" {...register("maxCapacityKg")} id="maxCapacityKg" placeholder="ENTER CAPACITY" />
             {errors.maxCapacityKg && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.maxCapacityKg.message}</p>}
           </div>
           <div>
-            <NeoBrutalLabel htmlFor="odometer">Initial Odometer (km)</NeoBrutalLabel>
+            <NeoBrutalLabel htmlFor="odometer">Initial Odometer:</NeoBrutalLabel>
             <NeoBrutalInput type="number" {...register("odometer")} id="odometer" placeholder="ENTER ODOMETER" />
           </div>
           <div>
-            <NeoBrutalLabel htmlFor="vehicleType">Type *</NeoBrutalLabel>
+            <NeoBrutalLabel htmlFor="vehicleType">Type: *</NeoBrutalLabel>
             <NeoBrutalSelect {...register("vehicleType")} id="vehicleType">
               <option value="VAN">Van</option>
               <option value="TRUCK">Truck</option>
               <option value="BIKE">Bike</option>
             </NeoBrutalSelect>
+          </div>
+          <div>
+            <NeoBrutalLabel htmlFor="model">Model:</NeoBrutalLabel>
+            <NeoBrutalInput {...register("model")} id="model" placeholder="ENTER MODEL" />
+          </div>
+          <div>
+            <NeoBrutalLabel htmlFor="name">Name * (internal)</NeoBrutalLabel>
+            <NeoBrutalInput {...register("name")} id="name" placeholder="ENTER NAME" />
+            {errors.name && <p className="text-red-600 text-xs font-bold mt-1 uppercase">{errors.name.message}</p>}
           </div>
           <div>
             <NeoBrutalLabel htmlFor="region">Region</NeoBrutalLabel>

@@ -35,6 +35,10 @@ type Trip = {
 };
 
 export default function Trips() {
+  const [search, setSearch] = useState("");
+  const [groupBy, setGroupBy] = useState("");
+  const [filter, setFilter] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const queryClient = useQueryClient();
 
@@ -89,6 +93,7 @@ export default function Trips() {
     cargoWeightKg: "",
     origin: "",
     destination: "",
+    estimatedFuelCost: "",
   });
   const [completeOdometer, setCompleteOdometer] = useState<Record<number, string>>({});
 
@@ -105,19 +110,59 @@ export default function Trips() {
       origin: form.origin || undefined,
       destination: form.destination || undefined,
     });
-    setForm({ vehicleId: "", driverId: "", cargoWeightKg: "", origin: "", destination: "" });
+    setForm({ vehicleId: "", driverId: "", cargoWeightKg: "", origin: "", destination: "", estimatedFuelCost: "" });
   };
+
+  const tripFleetType = (t: Trip) =>
+    t.vehicle?.name ?? (t.vehicle as { vehicleType?: string })?.vehicleType ?? "—";
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <NeoBrutalPageHeader title="Trip Dispatcher" subtitle="Create and manage trips" />
+        <NeoBrutalPageHeader
+          title="Trip Dispatcher & Management"
+          subtitle="Set up deliveries and move goods — pick vehicle & driver, track status"
+        />
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[180px]">
+            <NeoBrutalLabel>Search</NeoBrutalLabel>
+            <NeoBrutalInput
+              type="search"
+              placeholder="Search bar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <NeoBrutalLabel>Group by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+              <option value="">Group by</option>
+              <option value="status">Status</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Filter</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={filter || statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="">Filter</option>
+              <option value="DRAFT">Draft</option>
+              <option value="DISPATCHED">On way</option>
+            </NeoBrutalSelectCompact>
+          </div>
+          <div>
+            <NeoBrutalLabel>Sort by</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="">Sort by...</option>
+              <option value="origin">Origin</option>
+            </NeoBrutalSelectCompact>
+          </div>
+        </div>
 
         <NeoBrutalCard>
-          <NeoBrutalSectionTitle>Create Trip</NeoBrutalSectionTitle>
-          <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <NeoBrutalSectionTitle>New Trip Form</NeoBrutalSectionTitle>
+          <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
             <div>
-              <NeoBrutalLabel>Vehicle</NeoBrutalLabel>
+              <NeoBrutalLabel>Select Vehicle:</NeoBrutalLabel>
               <NeoBrutalSelect
                 value={form.vehicleId}
                 onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}
@@ -132,7 +177,19 @@ export default function Trips() {
               </NeoBrutalSelect>
             </div>
             <div>
-              <NeoBrutalLabel>Driver</NeoBrutalLabel>
+              <NeoBrutalLabel>Cargo Weight (Kg):</NeoBrutalLabel>
+              <NeoBrutalInput
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.cargoWeightKg}
+                onChange={(e) => setForm((f) => ({ ...f, cargoWeightKg: e.target.value }))}
+                placeholder="ENTER WEIGHT"
+                required
+              />
+            </div>
+            <div>
+              <NeoBrutalLabel>Select Driver:</NeoBrutalLabel>
               <NeoBrutalSelect
                 value={form.driverId}
                 onChange={(e) => setForm((f) => ({ ...f, driverId: e.target.value }))}
@@ -146,79 +203,62 @@ export default function Trips() {
                 ))}
               </NeoBrutalSelect>
             </div>
+            <div className="sm:col-span-2">
+              <NeoBrutalLabel>Origin Address:</NeoBrutalLabel>
+              <NeoBrutalInput
+                value={form.origin}
+                onChange={(e) => setForm((f) => ({ ...f, origin: e.target.value }))}
+                placeholder="e.g. Mumbai"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <NeoBrutalLabel>Destination:</NeoBrutalLabel>
+              <NeoBrutalInput
+                value={form.destination}
+                onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
+                placeholder="e.g. Pune"
+              />
+            </div>
             <div>
-              <NeoBrutalLabel>Cargo (kg)</NeoBrutalLabel>
+              <NeoBrutalLabel>Estimated Fuel Cost:</NeoBrutalLabel>
               <NeoBrutalInput
                 type="number"
                 min="0"
                 step="0.01"
-                value={form.cargoWeightKg}
-                onChange={(e) => setForm((f) => ({ ...f, cargoWeightKg: e.target.value }))}
-                placeholder="ENTER WEIGHT"
-                required
+                value={form.estimatedFuelCost}
+                onChange={(e) => setForm((f) => ({ ...f, estimatedFuelCost: e.target.value }))}
+                placeholder="ENTER COST"
               />
             </div>
-            <div>
-              <NeoBrutalLabel>Origin</NeoBrutalLabel>
-              <NeoBrutalInput
-                value={form.origin}
-                onChange={(e) => setForm((f) => ({ ...f, origin: e.target.value }))}
-                placeholder="ENTER ORIGIN"
-              />
-            </div>
-            <div>
-              <NeoBrutalLabel>Destination</NeoBrutalLabel>
-              <NeoBrutalInput
-                value={form.destination}
-                onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
-                placeholder="ENTER DESTINATION"
-              />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-5">
+            <div className="sm:col-span-2 flex items-end">
               <NeoBrutalButton type="submit" disabled={createMutation.isPending} size="sm">
-                Create Trip (Draft)
+                Confirm & Dispatch Trip
               </NeoBrutalButton>
             </div>
           </form>
         </NeoBrutalCard>
 
-        <div className="flex gap-3 items-end">
-          <div>
-            <NeoBrutalLabel>Filter by Status</NeoBrutalLabel>
-            <NeoBrutalSelectCompact
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="DISPATCHED">Dispatched</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </NeoBrutalSelectCompact>
-          </div>
-        </div>
-
         <NeoBrutalCardCompact>
-          <NeoBrutalSectionTitle>Trips</NeoBrutalSectionTitle>
+          <NeoBrutalSectionTitle>Trip list</NeoBrutalSectionTitle>
           {isLoading ? (
             <p className="text-black/60 font-bold text-sm">Loading...</p>
           ) : (
             <NeoBrutalTable>
               <NeoBrutalTHead>
-                <NeoBrutalTH>ID</NeoBrutalTH>
-                <NeoBrutalTH>Vehicle</NeoBrutalTH>
-                <NeoBrutalTH>Driver</NeoBrutalTH>
-                <NeoBrutalTH>Cargo (kg)</NeoBrutalTH>
+                <NeoBrutalTH>Trip</NeoBrutalTH>
+                <NeoBrutalTH>Trip Fleet Type</NeoBrutalTH>
+                <NeoBrutalTH>Origin</NeoBrutalTH>
+                <NeoBrutalTH>Destination</NeoBrutalTH>
                 <NeoBrutalTH>Status</NeoBrutalTH>
                 <NeoBrutalTH>Actions</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
                 {list.map((t) => (
                   <NeoBrutalTR key={t.id}>
-                    <NeoBrutalTD>{t.id}</NeoBrutalTD>
-                    <NeoBrutalTD>{t.vehicle?.name} ({t.vehicle?.licensePlate})</NeoBrutalTD>
-                    <NeoBrutalTD>{t.driver?.name}</NeoBrutalTD>
-                    <NeoBrutalTD>{t.cargoWeightKg}</NeoBrutalTD>
+                    <NeoBrutalTD>#{t.id}</NeoBrutalTD>
+                    <NeoBrutalTD>{tripFleetType(t)}</NeoBrutalTD>
+                    <NeoBrutalTD>{t.origin ?? "—"}</NeoBrutalTD>
+                    <NeoBrutalTD>{t.destination ?? "—"}</NeoBrutalTD>
                     <NeoBrutalTD>
                       <NeoBrutalBadge color={
                         t.status === "COMPLETED" ? "#4ADE80" :
