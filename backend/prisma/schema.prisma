@@ -1,16 +1,26 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// FleetFlow - Fleet & Logistics Management
+// PostgreSQL + Prisma
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ---- RBAC ----
+enum RoleName {
+  FLEET_MANAGER
+  DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYST
+}
+
+model Role {
+  id    Int       @id @default(autoincrement())
+  name  RoleName  @unique
+  users User[]
 }
 
 model User {
@@ -18,5 +28,141 @@ model User {
   email     String   @unique
   password  String
   name      String?
+  roleId    Int?
+  role      Role?    @relation(fields: [roleId], references: [id])
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver    Driver?
+}
+
+// ---- Assets ----
+enum VehicleType {
+  TRUCK
+  VAN
+  BIKE
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  ON_TRIP
+  IN_SHOP
+  OUT_OF_SERVICE
+}
+
+model Vehicle {
+  id             Int            @id @default(autoincrement())
+  name           String
+  model          String?
+  licensePlate   String         @unique
+  maxCapacityKg  Float
+  odometer       Float          @default(0)
+  status         VehicleStatus  @default(AVAILABLE)
+  vehicleType    VehicleType
+  region         String?
+  retired        Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  trips          Trip[]
+  maintenanceLogs MaintenanceLog[]
+  fuelLogs       FuelLog[]
+  @@index([status, vehicleType, region])
+  @@index([retired])
+}
+
+// ---- Drivers & Safety ----
+enum DriverStatus {
+  ON_DUTY
+  OFF_DUTY
+  SUSPENDED
+}
+
+model Driver {
+  id                 Int      @id @default(autoincrement())
+  userId             Int?     @unique
+  user               User?    @relation(fields: [userId], references: [id])
+  name               String
+  licenseNumber     String
+  licenseExpiry     DateTime
+  licenseCategory   String
+  status             DriverStatus @default(OFF_DUTY)
+  safetyScore        Float?
+  tripCompletionRate Float?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  trips              Trip[]
+  @@index([status, licenseExpiry])
+}
+
+// ---- Trips & Cargo ----
+enum TripStatus {
+  DRAFT
+  DISPATCHED
+  COMPLETED
+  CANCELLED
+}
+
+model Trip {
+  id             Int         @id @default(autoincrement())
+  vehicleId      Int
+  vehicle        Vehicle     @relation(fields: [vehicleId], references: [id])
+  driverId       Int
+  driver         Driver      @relation(fields: [driverId], references: [id])
+  cargoWeightKg  Float
+  status         TripStatus  @default(DRAFT)
+  origin         String?
+  destination    String?
+  startOdometer  Float?
+  endOdometer    Float?
+  createdAt      DateTime    @default(now())
+  completedAt    DateTime?
+  fuelLogs       FuelLog[]
+  @@index([status, vehicleId, driverId])
+  @@index([createdAt])
+}
+
+// Pending cargo (shipments waiting for assignment)
+model Shipment {
+  id             Int      @id @default(autoincrement())
+  cargoWeightKg  Float
+  status         String   @default("PENDING_ASSIGNMENT")
+  tripId         Int?
+  createdAt      DateTime @default(now())
+  @@index([status])
+}
+
+// ---- Maintenance ----
+model MaintenanceLog {
+  id          Int      @id @default(autoincrement())
+  vehicleId   Int
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  description String
+  serviceType String?
+  cost        Float?
+  createdAt   DateTime @default(now())
+  @@index([vehicleId, createdAt])
+}
+
+// ---- Fuel & Expenses ----
+model FuelLog {
+  id        Int      @id @default(autoincrement())
+  vehicleId Int
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  tripId    Int?
+  trip      Trip?    @relation(fields: [tripId], references: [id])
+  liters    Float
+  cost      Float
+  date      DateTime
+  createdAt DateTime @default(now())
+  @@index([vehicleId, date])
+  @@index([tripId])
+}
+
+// ---- Counters / cached KPIs (for data-intensive dashboards) ----
+model FleetStats {
+  id                Int      @id @default(autoincrement())
+  activeFleetCount  Int      @default(0)
+  maintenanceAlertsCount Int @default(0)
+  utilizationRatePct Float    @default(0)
+  pendingCargoCount Int      @default(0)
+  updatedAt         DateTime @updatedAt
 }
