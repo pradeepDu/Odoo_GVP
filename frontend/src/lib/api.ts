@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://carpet-declare-applicable-cancer.trycloudflare.com/api";
+// const API_BASE = import.meta.env.VITE_API_URL ||  "http://localhost:8080/api";
 
 export type ApiEnvelope<T> = {
   success: boolean;
@@ -11,10 +14,20 @@ function getToken(): string | null {
 }
 
 function getErrorMessage(body: unknown, fallback: string): string {
-  if (body && typeof body === "object" && "message" in body && typeof (body as { message: unknown }).message === "string") {
+  if (
+    body &&
+    typeof body === "object" &&
+    "message" in body &&
+    typeof (body as { message: unknown }).message === "string"
+  ) {
     return (body as { message: string }).message;
   }
-  if (body && typeof body === "object" && "error" in body && typeof (body as { error: unknown }).error === "string") {
+  if (
+    body &&
+    typeof body === "object" &&
+    "error" in body &&
+    typeof (body as { error: unknown }).error === "string"
+  ) {
     return (body as { error: string }).error;
   }
   return fallback;
