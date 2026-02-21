@@ -2,7 +2,7 @@
   "watch": ["src", "index.ts", "config", "prisma/schema.prisma"],
   "ext": "ts,js,json",
   "ignore": ["src/**/*.test.ts", "node_modules", "dist"],
-  "exec": "ts-node --transpile-only index.ts",
+  "exec": "./scripts/start-with-cleanup.sh",
   "env": {
     "NODE_ENV": "development"
   },

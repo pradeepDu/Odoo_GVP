@@ -17,9 +17,17 @@ const EMAIL_QUEUE_NAME = "fleetflow-email";
 const EMAIL_DLQ_NAME = "fleetflow-email-dlq";
 const emailService = new EmailService();
 
-// Batch configuration for DLQ processing
-const DLQ_BATCH_SIZE = 10; // Process up to 10 DLQ entries at once
-const DLQ_BATCH_INTERVAL = 30000; // Process batch every 30 seconds
+// Batch configuration
+const EMAIL_BATCH_SIZE = 100; // Process up to 100 emails at once
+const EMAIL_BATCH_TIMEOUT = 2000; // Or process after 2 seconds
+const DLQ_BATCH_SIZE = 100; // Process up to 100 DLQ entries at once
+const DLQ_BATCH_TIMEOUT = 2000; // Or process after 2 seconds
+
+// Track batch processing stats
+let emailBatchCount = 0;
+let emailBatchStartTime = Date.now();
+let dlqBatchCount = 0;
+let dlqBatchStartTime = Date.now();
 
 /**
  * Process main email jobs (forgot password, etc.)
@@ -29,7 +37,14 @@ async function processEmailJob(
 ): Promise<void> {
   const { tag } = job.data;
 
-  console.log(`[EmailWorker] Processing job ${job.id} with tag: ${tag}`);
+  // Increment batch counter
+  emailBatchCount++;
+  const batchElapsed = Date.now() - emailBatchStartTime;
+
+  // Log batch progress
+  console.log(
+    `[EmailWorker] 📧 Batch: ${emailBatchCount}/${EMAIL_BATCH_SIZE} | Elapsed: ${batchElapsed}ms/${EMAIL_BATCH_TIMEOUT}ms`,
+  );
 
   // Process based on tag
   switch (tag) {
@@ -39,14 +54,23 @@ async function processEmailJob(
           job.data.email,
           job.data.resetToken,
         );
-        console.log(
-          `[EmailWorker] ✓ Password reset email sent to ${job.data.email}`,
-        );
       }
       break;
 
     default:
       throw new Error(`Unknown email job tag: ${tag}`);
+  }
+
+  // Reset batch counter if batch size reached or timeout exceeded
+  if (
+    emailBatchCount >= EMAIL_BATCH_SIZE ||
+    batchElapsed >= EMAIL_BATCH_TIMEOUT
+  ) {
+    console.log(
+      `[EmailWorker] ✓ Batch complete: ${emailBatchCount} emails sent in ${batchElapsed}ms\n`,
+    );
+    emailBatchCount = 0;
+    emailBatchStartTime = Date.now();
   }
 }
 
@@ -55,13 +79,27 @@ async function processEmailJob(
  */
 async function processDlqJob(job: Job<DlqEntry, void, string>): Promise<void> {
   const entry = job.data;
+
+  // Increment batch counter
+  dlqBatchCount++;
+  const batchElapsed = Date.now() - dlqBatchStartTime;
+
+  // Log batch progress
   console.log(
-    `[DLQWorker] Processing DLQ entry: ${entry.error.substring(0, 50)}...`,
+    `[DLQWorker] 🚨 Batch: ${dlqBatchCount}/${DLQ_BATCH_SIZE} | Elapsed: ${batchElapsed}ms/${DLQ_BATCH_TIMEOUT}ms`,
   );
 
   // Send individual alert to admin about this failed job
   await emailService.sendDeadLetterAlert(entry);
-  console.log(`[DLQWorker] ✓ Admin alert sent for failed job`);
+
+  // Reset batch counter if batch size reached or timeout exceeded
+  if (dlqBatchCount >= DLQ_BATCH_SIZE || batchElapsed >= DLQ_BATCH_TIMEOUT) {
+    console.log(
+      `[DLQWorker] ✓ Batch complete: ${dlqBatchCount} DLQ alerts sent in ${batchElapsed}ms\n`,
+    );
+    dlqBatchCount = 0;
+    dlqBatchStartTime = Date.now();
+  }
 }
 
 // Main email worker - processes all regular email jobs
@@ -70,10 +108,10 @@ const emailWorker = new Worker<EmailJobPayload, void, string>(
   processEmailJob,
   {
     connection,
-    concurrency: 5, // Process up to 5 emails concurrently
+    concurrency: 50, // Process up to 50 emails concurrently for batch-like behavior
     limiter: {
-      max: 10, // Max 10 jobs
-      duration: 1000, // Per 1 second (rate limiting)
+      max: EMAIL_BATCH_SIZE, // Max batch size
+      duration: EMAIL_BATCH_TIMEOUT, // Time window for batch
     },
   },
 );
@@ -84,10 +122,10 @@ const dlqWorker = new Worker<DlqEntry, void, string>(
   processDlqJob,
   {
     connection,
-    concurrency: 2, // Process DLQ entries slowly
+    concurrency: 20, // Process up to 20 DLQ entries concurrently
     limiter: {
-      max: 5, // Max 5 DLQ alerts
-      duration: 60000, // Per minute (don't spam admin)
+      max: DLQ_BATCH_SIZE, // Max batch size
+      duration: DLQ_BATCH_TIMEOUT, // Time window for batch
     },
   },
 );
@@ -97,10 +135,6 @@ emailWorker.on("failed", async (job, err) => {
   if (!job) return;
 
   const maxAttempts = job.opts.attempts ?? 3;
-  console.error(
-    `[EmailWorker] ✗ Job ${job.id} failed (attempt ${job.attemptsMade}/${maxAttempts}):`,
-    err?.message,
-  );
 
   // On final failure, add to DLQ
   if (job.attemptsMade >= maxAttempts) {
@@ -112,14 +146,7 @@ emailWorker.on("failed", async (job, err) => {
       attemptsMade: job.attemptsMade,
       jobId: job.id,
     });
-    console.error(
-      `[EmailWorker] Job ${job.id} moved to DLQ after ${job.attemptsMade} attempts`,
-    );
   }
-});
-
-emailWorker.on("completed", (job) => {
-  console.log(`[EmailWorker] ✓ Job ${job.id} (${job.data.tag}) completed`);
 });
 
 emailWorker.on("error", (err) => {
@@ -127,18 +154,6 @@ emailWorker.on("error", (err) => {
 });
 
 // DLQ worker event handlers
-dlqWorker.on("completed", (job) => {
-  console.log(`[DLQWorker] ✓ DLQ entry ${job.id} processed - admin alerted`);
-});
-
-dlqWorker.on("failed", (job, err) => {
-  console.error(
-    `[DLQWorker] ✗ Failed to process DLQ entry ${job?.id}:`,
-    err?.message,
-  );
-  // Don't retry - just log it
-});
-
 dlqWorker.on("error", (err) => {
   console.error("[DLQWorker] Worker error:", err);
 });
@@ -146,19 +161,81 @@ dlqWorker.on("error", (err) => {
 /**
  * Initialize both email and DLQ workers - exports for integration into main server
  */
-export function startEmailWorker() {
-  console.log("[EmailWorker] 🚀 Email worker started - processing email jobs");
-  console.log("[DLQWorker] 🚀 DLQ worker started - monitoring failed jobs");
+export async function startEmailWorker() {
+  console.log("\n[Queue System] 🚀 Starting email queue workers...");
+  console.log("[EmailWorker] ✓ Email worker started (batch: 100 jobs or 2s)");
+  console.log("[DLQWorker] ✓ DLQ worker started (batch: 100 jobs or 2s)");
+  console.log("[Queue System] Ready for batch processing\n");
+
+  // Note: Periodic stats logger disabled - using real-time logs instead
+  // Uncomment below to enable periodic health checks every 2 minutes
+  // startQueueStatsLogger();
+
   return { emailWorker, dlqWorker };
+}
+
+/**
+ * Periodic queue statistics logger - shows batch processing info
+ */
+let statsInterval: NodeJS.Timeout | null = null;
+
+function startQueueStatsLogger() {
+  // Log stats every 2 minutes
+  statsInterval = setInterval(async () => {
+    try {
+      const emailCounts = await emailQueue.getJobCounts();
+      const dlqCounts = await emailDlqQueue.getJobCounts();
+
+      console.log("\n" + "─".repeat(60));
+      console.log(
+        `[Queue Stats] 📊 Periodic Health Check - ${new Date().toLocaleTimeString()}`,
+      );
+      console.log("─".repeat(60));
+      console.log(
+        `[EmailQueue] Waiting: ${emailCounts.waiting} | Active: ${emailCounts.active} | Completed: ${emailCounts.completed} | Failed: ${emailCounts.failed}`,
+      );
+      console.log(
+        `[DLQ Queue] Waiting: ${dlqCounts.waiting} | Active: ${dlqCounts.active} | Completed: ${dlqCounts.completed} | Failed: ${dlqCounts.failed}`,
+      );
+
+      // Show batch processing info if there are jobs
+      if (emailCounts.waiting > 0) {
+        console.log(
+          `[EmailQueue] ⏳ ${emailCounts.waiting} jobs queued for batch processing`,
+        );
+      }
+      if (dlqCounts.waiting > 0) {
+        console.log(
+          `[DLQ Queue] ⚠️  ${dlqCounts.waiting} failed jobs awaiting admin review`,
+        );
+      }
+
+      console.log("─".repeat(60) + "\n");
+    } catch (error) {
+      console.error("[Queue Stats] Error fetching stats:", error);
+    }
+  }, 120000); // Every 2 minutes
+
+  console.log(
+    "[Queue Stats] 📊 Periodic stats logger started (every 2 minutes)\n",
+  );
 }
 
 /**
  * Graceful shutdown handler for both workers
  */
 export async function stopEmailWorker(): Promise<void> {
-  console.log("[Workers] Shutting down gracefully...");
+  console.log("\n[Workers] Shutting down gracefully...");
+
+  // Stop stats logger
+  if (statsInterval) {
+    clearInterval(statsInterval);
+    console.log("[Queue Stats] Stats logger stopped");
+  }
+
+  // Close workers
   await Promise.all([emailWorker.close(), dlqWorker.close()]);
-  console.log("[Workers] All workers stopped");
+  console.log("[Workers] All workers stopped\n");
 }
 
 // Only start worker if this file is run directly (backward compatibility)
