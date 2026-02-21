@@ -62,7 +62,6 @@ export async function addPasswordResetEmail(
       removeOnFail: false, // Keep failed jobs for DLQ processing
     },
   );
-  console.log(`[Queue] Password reset email queued for ${email}`);
 }
 
 /**
@@ -74,5 +73,4 @@ export async function addToDlq(entry: DlqEntry): Promise<void> {
     priority: 1,
     removeOnComplete: { count: 100 },
   });
-  console.log(`[DLQ] Failed job added to DLQ:`, entry.error.substring(0, 100));
 }
