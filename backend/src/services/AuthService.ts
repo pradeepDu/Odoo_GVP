@@ -3,10 +3,9 @@ import crypto from "crypto";
 import prisma from "../../config/prisma";
 import { signToken } from "../middleware/auth";
 import type { RoleName } from "@prisma/client";
-import { EmailService } from "./EmailService";
+import { addPasswordResetEmail } from "../queues/emailQueue";
 
 const SALT_ROUNDS = 10;
-const emailService = new EmailService();
 
 export class AuthService {
   async register(
@@ -23,7 +22,7 @@ export class AuthService {
       where: { name: roleName ?? "DISPATCHER" },
     });
     if (!role) {
-      role = (await prisma.role.findFirst({ where: {} })) ?? undefined;
+      role = (await prisma.role.findFirst({ where: {} })) ?? null;
     }
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
@@ -135,8 +134,13 @@ export class AuthService {
         },
       });
 
-      // Send email with the unhashed token
-      await emailService.sendPasswordResetEmail(email, resetToken);
+      // Queue password reset email for background processing
+      addPasswordResetEmail(email, resetToken).catch((err) => {
+        console.error(
+          "[AuthService] Failed to queue password reset email:",
+          err,
+        );
+      });
 
       return {
         message: "If that email exists, a password reset link has been sent",

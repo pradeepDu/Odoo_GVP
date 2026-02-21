@@ -3,7 +3,8 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 import prisma from "../../config/prisma";
 import { sendError } from "../utils/response";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fleetflow-secret-change-in-production";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "fleetflow-secret-change-in-production";
 
 export interface JwtPayload {
   userId: number;
@@ -14,7 +15,7 @@ export interface JwtPayload {
 export async function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
@@ -40,6 +41,9 @@ export async function authMiddleware(
   }
 }
 
-export function signToken(payload: JwtPayload, expiresIn: string = "7d"): string {
+export function signToken(
+  payload: JwtPayload,
+  expiresIn: string = "7d",
+): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn } as SignOptions);
 }

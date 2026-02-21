@@ -14,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate",
-    "queue:worker": "nodemon --watch src/queues src/queues/worker.ts"
+    "queue:worker": "nodemon --watch src/queues src/queues/worker.ts",
+    "queue:email": "ts-node src/queues/emailWorker.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,7 @@
     "bullmq": "^5.34.5",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.1",
     "pg": "^8.18.0",
