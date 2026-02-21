@@ -2,9 +2,16 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { showApiError } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { AuthLayout } from "@/components/auth-layout";
+import {
+  NeoBrutalCard,
+  NeoBrutalTitle,
+  NeoBrutalSubtitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalButton,
+  NeoBrutalError,
+} from "@/components/ui/neo-brutual-card";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -31,74 +38,62 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">FleetFlow</CardTitle>
-          <p className="text-muted-foreground text-sm">Sign in to your account</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">
-                {error}
-              </div>
-            )}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring"
-                )}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring"
-                )}
-                required
-              />
-            </div>
-            <div className="text-right">
-              <Link to="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? "Signing in…" : "Sign in"}
-            </Button>
+    <AuthLayout>
+      <NeoBrutalCard>
+        <NeoBrutalTitle>FleetFlow</NeoBrutalTitle>
+        <NeoBrutalSubtitle>Sign in to your account</NeoBrutalSubtitle>
 
-            <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline font-medium">
-                Create account
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <NeoBrutalError>{error}</NeoBrutalError>}
+
+          <div>
+            <NeoBrutalLabel htmlFor="email">Email</NeoBrutalLabel>
+            <NeoBrutalInput
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ENTER EMAIL"
+              required
+            />
+          </div>
+
+          <div>
+            <NeoBrutalLabel htmlFor="password">Password</NeoBrutalLabel>
+            <NeoBrutalInput
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="ENTER PASSWORD"
+              required
+            />
+          </div>
+
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-bold text-black/60 underline underline-offset-4 hover:text-black transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          <NeoBrutalButton disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
+          </NeoBrutalButton>
+
+          <div className="text-center text-sm font-bold text-black/60">
+            {"Don't have an account? "}
+            <Link
+              to="/register"
+              className="text-black underline underline-offset-4 hover:text-black/70"
+            >
+              Create Account
+            </Link>
+          </div>
+        </form>
+      </NeoBrutalCard>
+    </AuthLayout>
   );
 }

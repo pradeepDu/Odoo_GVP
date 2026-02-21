@@ -2,9 +2,18 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { showApiError } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { AuthLayout } from "@/components/auth-layout";
+import {
+  NeoBrutalCard,
+  NeoBrutalTitle,
+  NeoBrutalSubtitle,
+  NeoBrutalLabel,
+  NeoBrutalInput,
+  NeoBrutalSelect,
+  NeoBrutalButton,
+  NeoBrutalError,
+  NeoBrutalHelperText,
+} from "@/components/ui/neo-brutual-card";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -22,7 +31,6 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    // Validation
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -52,154 +60,108 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">FleetFlow</CardTitle>
-          <p className="text-muted-foreground text-sm">Create your account</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">
-                {error}
-              </div>
-            )}
+    <AuthLayout>
+      <NeoBrutalCard>
+        <NeoBrutalTitle>FleetFlow</NeoBrutalTitle>
+        <NeoBrutalSubtitle>Create your account</NeoBrutalSubtitle>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring",
-                )}
-                placeholder="John Doe"
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <NeoBrutalError>{error}</NeoBrutalError>}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring",
-                )}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
+          <div>
+            <NeoBrutalLabel htmlFor="name">Full Name</NeoBrutalLabel>
+            <NeoBrutalInput
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="ENTER FULL NAME"
+              required
+            />
+          </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-1"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={cn(
-                    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm pr-10",
-                    "focus:outline-none focus:ring-2 focus:ring-ring",
-                  )}
-                  minLength={6}
-                  required
-                />
-                <Button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 h-full px-3"
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Minimum 6 characters
-              </p>
-            </div>
+          <div>
+            <NeoBrutalLabel htmlFor="email">Email</NeoBrutalLabel>
+            <NeoBrutalInput
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ENTER EMAIL"
+              required
+            />
+          </div>
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium mb-1"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
+          <div>
+            <NeoBrutalLabel htmlFor="password">Password</NeoBrutalLabel>
+            <div className="relative">
+              <NeoBrutalInput
+                id="password"
                 type={showPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring",
-                )}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="ENTER PASSWORD"
+                minLength={6}
                 required
+                className="pr-20"
               />
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium mb-1">
-                Role
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className={cn(
-                  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-ring",
-                )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-black uppercase text-black/50 hover:text-black transition-colors"
               >
-                <option value="DISPATCHER">Dispatcher</option>
-                <option value="FLEET_MANAGER">Fleet Manager</option>
-                <option value="SAFETY_OFFICER">Safety Officer</option>
-                <option value="FINANCIAL_ANALYST">Financial Analyst</option>
-              </select>
-              <p className="text-xs text-muted-foreground mt-1">
-                Select your role in the organization
-              </p>
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
+            <NeoBrutalHelperText>Minimum 6 characters</NeoBrutalHelperText>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full"
+          <div>
+            <NeoBrutalLabel htmlFor="confirmPassword">
+              Confirm Password
+            </NeoBrutalLabel>
+            <NeoBrutalInput
+              id="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="CONFIRM PASSWORD"
+              required
+            />
+          </div>
+
+          <div>
+            <NeoBrutalLabel htmlFor="role">Role</NeoBrutalLabel>
+            <NeoBrutalSelect
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
             >
-              {loading ? "Creating account…" : "Create Account"}
-            </Button>
+              <option value="DISPATCHER">Dispatcher</option>
+              <option value="FLEET_MANAGER">Fleet Manager</option>
+              <option value="SAFETY_OFFICER">Safety Officer</option>
+              <option value="FINANCIAL_ANALYST">Financial Analyst</option>
+            </NeoBrutalSelect>
+            <NeoBrutalHelperText>
+              Select your role in the organization
+            </NeoBrutalHelperText>
+          </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-primary hover:underline font-medium"
-              >
-                Sign in
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          <NeoBrutalButton disabled={loading}>
+            {loading ? "Creating account..." : "Create Account"}
+          </NeoBrutalButton>
+
+          <div className="text-center text-sm font-bold text-black/60">
+            {"Already have an account? "}
+            <Link
+              to="/login"
+              className="text-black underline underline-offset-4 hover:text-black/70"
+            >
+              Sign In
+            </Link>
+          </div>
+        </form>
+      </NeoBrutalCard>
+    </AuthLayout>
   );
 }
