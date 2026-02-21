@@ -13,5 +13,7 @@ router.get("/fuel-efficiency/vehicle/:vehicleId", (req, res) => controller.getFu
 router.get("/vehicle-roi/:vehicleId", (req, res) => controller.getVehicleROI(req, res));
 router.get("/monthly-fuel", (req, res) => controller.getMonthlyFuelSummary(req, res));
 router.get("/driver-safety", (req, res) => controller.getDriverSafetySummary(req, res));
+router.get("/top-costliest-vehicles", (req, res) => controller.getTopCostliestVehicles(req, res));
+router.get("/monthly-financial", (req, res) => controller.getMonthlyFinancialSummary(req, res));
 
 export default router;

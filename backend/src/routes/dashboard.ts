@@ -6,6 +6,6 @@ import { requireMinRole } from "../middleware/rbac";
 const router = Router();
 const controller = new DashboardController();
 
-router.get("/kpis", authMiddleware, requireMinRole("DISPATCHER"), (req, res) => controller.getKPIs(req, res));
+router.get("/kpis", authMiddleware, requireMinRole("FINANCIAL_ANALYST"), (req, res) => controller.getKPIs(req, res));
 
 export default router;

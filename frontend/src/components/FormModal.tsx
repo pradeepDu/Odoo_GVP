@@ -32,15 +32,16 @@ export function FormModal({ open, onClose, title, children, size = "md" }: FormM
       />
       <div
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-white p-6 shadow-lg pointer-events-auto",
+          "fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg border-4 border-black bg-white p-6 shadow-lg pointer-events-auto text-black",
           sizeClasses[size]
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        style={{ backgroundColor: "#fff" }}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="modal-title" className="text-lg font-semibold">
+        <div className="mb-4 flex items-center justify-between text-black">
+          <h2 id="modal-title" className="text-lg font-semibold text-black">
             {title}
           </h2>
           <Button
@@ -53,7 +54,9 @@ export function FormModal({ open, onClose, title, children, size = "md" }: FormM
             <X className="h-5 w-5" />
           </Button>
         </div>
-        {children}
+        <div className="text-black" style={{ backgroundColor: "#fff" }}>
+          {children}
+        </div>
       </div>
     </>
   );

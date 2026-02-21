@@ -55,12 +55,13 @@ export class TripService {
   }
 
   async dispatch(tripId: number) {
-    const trip = await prisma.trip.findUnique({ where: { id: tripId } });
+    const trip = await prisma.trip.findUnique({ where: { id: tripId }, include: { vehicle: true } });
     if (!trip) throw new Error("Trip not found");
     if (trip.status !== "DRAFT") throw new Error("Only draft trips can be dispatched");
+    const startOdometer = trip.vehicle.odometer;
     return prisma.trip.update({
       where: { id: tripId },
-      data: { status: "DISPATCHED" },
+      data: { status: "DISPATCHED", startOdometer },
     });
   }
 

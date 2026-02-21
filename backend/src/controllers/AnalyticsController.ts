@@ -13,7 +13,7 @@ export class AnalyticsController {
         return;
       }
       const result = await analyticsService.getFuelEfficiencyByVehicle(vehicleId);
-      sendSuccess(res, result ?? { kmPerL: 0, totalKm: 0, totalLiters: 0 });
+      sendSuccess(res, result);
     } catch (e) {
       sendError(res, e instanceof Error ? e.message : "Failed to load fuel efficiency", 500);
     }
@@ -49,6 +49,26 @@ export class AnalyticsController {
       sendSuccess(res, result);
     } catch (e) {
       sendError(res, e instanceof Error ? e.message : "Failed to load driver safety summary", 500);
+    }
+  }
+
+  async getTopCostliestVehicles(req: Request, res: Response): Promise<void> {
+    try {
+      const limit = req.query.limit ? Math.min(20, Number(req.query.limit)) : 5;
+      const result = await analyticsService.getTopCostliestVehicles(limit);
+      sendSuccess(res, result);
+    } catch (e) {
+      sendError(res, e instanceof Error ? e.message : "Failed to load costliest vehicles", 500);
+    }
+  }
+
+  async getMonthlyFinancialSummary(req: Request, res: Response): Promise<void> {
+    try {
+      const vehicleId = req.query.vehicleId ? Number(req.query.vehicleId) : undefined;
+      const result = await analyticsService.getMonthlyFinancialSummary(vehicleId);
+      sendSuccess(res, result);
+    } catch (e) {
+      sendError(res, e instanceof Error ? e.message : "Failed to load financial summary", 500);
     }
   }
 }

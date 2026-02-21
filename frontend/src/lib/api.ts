@@ -234,16 +234,44 @@ export const fuelApi = {
     ),
 };
 
+export type FuelEfficiencyResponse = {
+  vehicleId: number;
+  vehicleName: string;
+  kmPerL: number;
+  totalKm: number;
+  totalLiters: number;
+  completedTripsCount: number;
+  fuelLogsCount: number;
+};
+
+export type VehicleROISummaryResponse = {
+  vehicleId: number;
+  vehicleName: string;
+  licensePlate: string | null;
+  totalFuelCost: number;
+  totalMaintenanceCost: number;
+  totalOperationalCost: number;
+  totalLiters: number;
+  fuelLogsCount: number;
+  maintenanceLogsCount: number;
+};
+
 export const analyticsApi = {
   getFuelEfficiency: (vehicleId: number) =>
-    api<{ kmPerL: number; totalKm: number; totalLiters: number }>(
-      `/analytics/fuel-efficiency/vehicle/${vehicleId}`,
-    ),
+    api<FuelEfficiencyResponse>(`/analytics/fuel-efficiency/vehicle/${vehicleId}`),
   getVehicleROI: (vehicleId: number) =>
-    api<unknown>(`/analytics/vehicle-roi/${vehicleId}`),
+    api<VehicleROISummaryResponse>(`/analytics/vehicle-roi/${vehicleId}`),
   getMonthlyFuel: (vehicleId?: number) =>
     api<Record<string, { liters: number; cost: number }>>(
       `/analytics/monthly-fuel${vehicleId ? `?vehicleId=${vehicleId}` : ""}`,
     ),
   getDriverSafety: () => api<unknown[]>("/analytics/driver-safety"),
+  getTopCostliestVehicles: (limit?: number) =>
+    api<{ vehicleId: number; vehicleName: string; totalOperationalCost: number }[]>(
+      `/analytics/top-costliest-vehicles${limit != null ? `?limit=${limit}` : ""}`,
+    ),
+  getMonthlyFinancial: (vehicleId?: number) =>
+    api<{ month: string; fuelCost: number; maintenanceCost: number; totalCost: number }[]>(
+      `/analytics/monthly-financial${vehicleId ? `?vehicleId=${vehicleId}` : ""}`,
+    ),
 };
