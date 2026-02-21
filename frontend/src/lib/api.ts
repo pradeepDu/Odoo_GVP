@@ -1,6 +1,4 @@
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  "https://carpet-declare-applicable-cancer.trycloudflare.com/api";
+const API_BASE = import.meta.env.VITE_API_URL || "https://carpet-declare-applicable-cancer.trycloudflare.com/api";
 
 export type ApiEnvelope<T> = {
   success: boolean;
