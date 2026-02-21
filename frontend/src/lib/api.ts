@@ -44,6 +44,9 @@ export async function api<T>(
   const body = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    if (res.status === 403) {
+      throw new Error("You don't have access to this section. Contact your administrator.");
+    }
     throw new Error(getErrorMessage(body, res.statusText));
   }
 

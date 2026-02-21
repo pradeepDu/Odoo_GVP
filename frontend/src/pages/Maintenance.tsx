@@ -139,6 +139,17 @@ export default function Maintenance() {
               <option value="date">Date</option>
             </NeoBrutalSelectCompact>
           </div>
+          <div>
+            <NeoBrutalLabel>Filter by vehicle</NeoBrutalLabel>
+            <NeoBrutalSelectCompact value={listVehicleId} onChange={(e) => setListVehicleId(e.target.value)}>
+              <option value="">All vehicles</option>
+              {(vehicles as { id: number; name: string; licensePlate: string }[]).map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} ({v.licensePlate})
+                </option>
+              ))}
+            </NeoBrutalSelectCompact>
+          </div>
         </div>
 
         <NeoBrutalCardCompact>

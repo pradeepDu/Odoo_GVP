@@ -104,6 +104,7 @@ export class TripService {
         });
       }
     });
+    await driverService.recalcTripCompletionRate(trip.driverId);
     await statsService.refresh();
     return prisma.trip.findUnique({ where: { id: tripId } });
   }

@@ -59,6 +59,27 @@ export default function Dashboard() {
     enabled: selectedTripId != null,
   });
 
+  const filteredTrips = (() => {
+    let result = trips;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (t) =>
+          String(t.id).includes(q) ||
+          (t.vehicle?.name ?? "").toLowerCase().includes(q) ||
+          (t.vehicle?.licensePlate ?? "").toLowerCase().includes(q) ||
+          (t.driver?.name ?? "").toLowerCase().includes(q) ||
+          (t.origin ?? "").toLowerCase().includes(q) ||
+          (t.destination ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (filter === "ready") result = result.filter((t) => t.status === "DRAFT");
+    if (filter === "busy") result = result.filter((t) => t.status === "DISPATCHED");
+    if (sortBy === "trip") result = [...result].sort((a, b) => a.id - b.id);
+    if (sortBy === "status") result = [...result].sort((a, b) => a.status.localeCompare(b.status));
+    return result.slice(0, 5);
+  })();
+
   if (kpisLoading) return <DashboardLayout><p className="text-black font-bold">Loading KPIs...</p></DashboardLayout>;
   if (error) return <DashboardLayout><p className="text-black font-bold">Failed to load dashboard.</p></DashboardLayout>;
 
@@ -160,7 +181,7 @@ export default function Dashboard() {
                 <NeoBrutalTH>Status</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
-                {trips.slice(0, 5).map((t) => (
+                {filteredTrips.map((t) => (
                   <NeoBrutalTR key={t.id} onClick={() => setSelectedTripId(t.id)}>
                     <NeoBrutalTD>#{t.id}</NeoBrutalTD>
                     <NeoBrutalTD>{t.vehicle ? `${t.vehicle.name} (${t.vehicle.licensePlate})` : "—"}</NeoBrutalTD>

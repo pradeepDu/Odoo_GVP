@@ -102,6 +102,22 @@ export default function Vehicles() {
     if (confirmRetire) retireMutation.mutate(confirmRetire);
   };
 
+  const filteredList = (() => {
+    let result = list;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (v) =>
+          (v.name ?? "").toLowerCase().includes(q) ||
+          (v.licensePlate ?? "").toLowerCase().includes(q) ||
+          (v.model ?? "").toLowerCase().includes(q) ||
+          (v.vehicleType ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (sortBy === "odometer") result = [...result].sort((a, b) => a.odometer - b.odometer);
+    return result;
+  })();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -175,7 +191,7 @@ export default function Vehicles() {
                 <NeoBrutalTH>Actions</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
-                {list.map((v, idx) => (
+                {filteredList.map((v, idx) => (
                   <NeoBrutalTR key={v.id}>
                     <NeoBrutalTD>{idx + 1}</NeoBrutalTD>
                     <NeoBrutalTD className="font-mono">{v.licensePlate}</NeoBrutalTD>

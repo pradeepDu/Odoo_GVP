@@ -1,4 +1,7 @@
 import prisma from "../../config/prisma";
+import { DriverService } from "./DriverService";
+
+const driverService = new DriverService();
 
 export class AnalyticsService {
   /** Fuel efficiency: km / L per vehicle (from completed trips + fuel logs) */
@@ -49,17 +52,17 @@ export class AnalyticsService {
     return byMonth;
   }
 
+  /** Drivers with computed Completion Rate and Safety Score from trip data (same as Performance page). */
   async getDriverSafetySummary() {
-    return prisma.driver.findMany({
-      select: {
-        id: true,
-        name: true,
-        licenseExpiry: true,
-        safetyScore: true,
-        tripCompletionRate: true,
-        status: true,
-        _count: { select: { trips: true } },
-      },
-    });
+    const drivers = await driverService.list({});
+    return drivers.map((d) => ({
+      id: d.id,
+      name: d.name,
+      licenseExpiry: d.licenseExpiry,
+      safetyScore: d.safetyScore,
+      tripCompletionRate: d.tripCompletionRate,
+      status: d.status,
+      _count: { trips: d._count.trips },
+    }));
   }
 }

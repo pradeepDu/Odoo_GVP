@@ -88,6 +88,20 @@ export default function Drivers() {
   const isExpired = (dateStr: string) => new Date(dateStr) <= new Date();
   const complaints = (d: Driver) => (d as { complaints?: number }).complaints ?? 0;
 
+  const filteredList = (() => {
+    let result = list;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (d) =>
+          (d.name ?? "").toLowerCase().includes(q) ||
+          (d.licenseNumber ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (sortBy === "safety") result = [...result].sort((a, b) => (b.safetyScore ?? 0) - (a.safetyScore ?? 0));
+    return result;
+  })();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -152,7 +166,7 @@ export default function Drivers() {
                 <NeoBrutalTH>Duty Status</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
-                {list.map((d) => (
+                {filteredList.map((d) => (
                   <NeoBrutalTR key={d.id}>
                     <NeoBrutalTD>{d.name}</NeoBrutalTD>
                     <NeoBrutalTD className="font-mono">{d.licenseNumber}</NeoBrutalTD>

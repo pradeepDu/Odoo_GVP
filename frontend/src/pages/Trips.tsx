@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tripsApi, vehiclesApi, driversApi } from "@/lib/api";
-import { showSuccess, showApiError } from "@/lib/toast";
+import { showSuccess, showError, showApiError } from "@/lib/toast";
 import { StatusPill } from "@/components/StatusPill";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import {
@@ -97,24 +97,58 @@ export default function Trips() {
   });
   const [completeOdometer, setCompleteOdometer] = useState<Record<number, string>>({});
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     const vehicleId = Number(form.vehicleId);
     const driverId = Number(form.driverId);
     const cargoWeightKg = Number(form.cargoWeightKg);
     if (!vehicleId || !driverId || !cargoWeightKg) return;
-    createMutation.mutate({
-      vehicleId,
-      driverId,
-      cargoWeightKg,
-      origin: form.origin || undefined,
-      destination: form.destination || undefined,
-    });
-    setForm({ vehicleId: "", driverId: "", cargoWeightKg: "", origin: "", destination: "", estimatedFuelCost: "" });
+    try {
+      const validation = await tripsApi.validate({ vehicleId, driverId, cargoWeightKg });
+      if (!validation.ok) {
+        showError(validation.error ?? "Validation failed");
+        return;
+      }
+    } catch (err) {
+      showApiError(err);
+      return;
+    }
+    createMutation.mutate(
+      {
+        vehicleId,
+        driverId,
+        cargoWeightKg,
+        origin: form.origin || undefined,
+        destination: form.destination || undefined,
+      },
+      {
+        onSuccess: () => {
+          setForm({ vehicleId: "", driverId: "", cargoWeightKg: "", origin: "", destination: "", estimatedFuelCost: "" });
+        },
+      }
+    );
   };
 
   const tripFleetType = (t: Trip) =>
     t.vehicle?.name ?? (t.vehicle as { vehicleType?: string })?.vehicleType ?? "—";
+
+  const filteredTrips = (() => {
+    let result = list;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (t) =>
+          String(t.id).includes(q) ||
+          (t.origin ?? "").toLowerCase().includes(q) ||
+          (t.destination ?? "").toLowerCase().includes(q) ||
+          (t.vehicle?.name ?? "").toLowerCase().includes(q) ||
+          (t.driver?.name ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (sortBy === "origin") result = [...result].sort((a, b) => (a.origin ?? "").localeCompare(b.origin ?? ""));
+    if (sortBy === "status") result = [...result].sort((a, b) => a.status.localeCompare(b.status));
+    return result;
+  })();
 
   return (
     <DashboardLayout>
@@ -253,7 +287,7 @@ export default function Trips() {
                 <NeoBrutalTH>Actions</NeoBrutalTH>
               </NeoBrutalTHead>
               <NeoBrutalTBody>
-                {list.map((t) => (
+                {filteredTrips.map((t) => (
                   <NeoBrutalTR key={t.id}>
                     <NeoBrutalTD>#{t.id}</NeoBrutalTD>
                     <NeoBrutalTD>{tripFleetType(t)}</NeoBrutalTD>

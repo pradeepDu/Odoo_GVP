@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fuelApi, vehiclesApi } from "@/lib/api";
+import { fuelApi, vehiclesApi, tripsApi } from "@/lib/api";
 import { showSuccess, showApiError } from "@/lib/toast";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import {
@@ -23,6 +23,7 @@ import {
 
 export default function FuelExpense() {
   const [vehicleId, setVehicleId] = useState("");
+  const [tripId, setTripId] = useState("");
   const [liters, setLiters] = useState("");
   const [cost, setCost] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -31,6 +32,11 @@ export default function FuelExpense() {
   const { data: vehicles = [] } = useQuery({
     queryKey: ["vehicles"],
     queryFn: () => vehiclesApi.list(),
+  });
+
+  const { data: trips = [] } = useQuery({
+    queryKey: ["trips", "for-fuel"],
+    queryFn: () => tripsApi.list({ status: "COMPLETED" }) as Promise<{ id: number; vehicleId: number; destination: string | null }[]>,
   });
 
   const { data: list = [], isLoading } = useQuery({
@@ -46,7 +52,7 @@ export default function FuelExpense() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (body: { vehicleId: number; liters: number; cost: number; date: string }) =>
+    mutationFn: (body: { vehicleId: number; tripId?: number; liters: number; cost: number; date: string }) =>
       fuelApi.create(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fuel"] });
@@ -61,9 +67,17 @@ export default function FuelExpense() {
     const l = Number(liters);
     const c = Number(cost);
     if (!vid || !l || l <= 0 || c < 0) return;
-    createMutation.mutate({ vehicleId: vid, liters: l, cost: c, date });
+    const tid = tripId ? Number(tripId) : undefined;
+    createMutation.mutate({
+      vehicleId: vid,
+      tripId: tid,
+      liters: l,
+      cost: c,
+      date: date.slice(0, 10),
+    });
     setLiters("");
     setCost("");
+    setTripId("");
   };
 
   return (
@@ -81,7 +95,7 @@ export default function FuelExpense() {
               <NeoBrutalLabel>Vehicle</NeoBrutalLabel>
               <NeoBrutalSelect
                 value={vehicleId}
-                onChange={(e) => setVehicleId(e.target.value)}
+                onChange={(e) => { setVehicleId(e.target.value); setTripId(""); }}
                 required
               >
                 <option value="">Select</option>
@@ -90,6 +104,22 @@ export default function FuelExpense() {
                     {v.name} ({v.licensePlate})
                   </option>
                 ))}
+              </NeoBrutalSelect>
+            </div>
+            <div>
+              <NeoBrutalLabel>Link to trip (optional)</NeoBrutalLabel>
+              <NeoBrutalSelect
+                value={tripId}
+                onChange={(e) => setTripId(e.target.value)}
+              >
+                <option value="">None</option>
+                {(trips as { id: number; vehicleId: number; destination: string | null }[])
+                  .filter((t) => !vehicleId || t.vehicleId === Number(vehicleId))
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      Trip #{t.id} {t.destination ? `→ ${t.destination}` : ""}
+                    </option>
+                  ))}
               </NeoBrutalSelect>
             </div>
             <div>
