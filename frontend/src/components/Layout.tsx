@@ -40,7 +40,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-background">
       <aside
         className={cn(
-          "flex w-[220px] shrink-0 flex-col border-r border-border",
+          "flex w-55 shrink-0 flex-col border-r border-border",
           "bg-zinc-900 text-zinc-100"
         )}
       >
