@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import * as XLSX from "xlsx";
 import {
   LineChart,
   Line,
@@ -93,6 +94,69 @@ export default function Analytics() {
 
   const costliestChartData = topCostliest.map((v) => ({ vehicle: v.vehicleName, cost: v.totalOperationalCost }));
 
+  const handleDownloadExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const date = new Date().toISOString().slice(0, 10);
+
+    if (kpis) {
+      const kpiSheet = XLSX.utils.json_to_sheet([
+        { Metric: "Active Fleet (On Trip)", Value: kpis.activeFleetCount },
+        { Metric: "Maintenance Alerts (In Shop)", Value: kpis.maintenanceAlertsCount },
+        { Metric: "Utilization Rate %", Value: kpis.utilizationRatePct },
+        { Metric: "Pending Cargo", Value: kpis.pendingCargoCount },
+        { Metric: "Total Fuel Cost (₹)", Value: totalFuelCost },
+        { Metric: "Total Operational Cost (₹)", Value: totalOperationalCost },
+      ]);
+      XLSX.utils.book_append_sheet(wb, kpiSheet, "KPIs");
+    }
+
+    if (monthlyFinancial.length > 0) {
+      const financialSheet = XLSX.utils.json_to_sheet(
+        monthlyFinancial.map((r) => ({
+          Month: r.month,
+          "Fuel Cost (₹)": r.fuelCost,
+          "Maintenance Cost (₹)": r.maintenanceCost,
+          "Total Cost (₹)": r.totalCost,
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, financialSheet, "Monthly Financial");
+    }
+
+    if (topCostliest.length > 0) {
+      const costliestSheet = XLSX.utils.json_to_sheet(
+        topCostliest.map((v) => ({ Vehicle: v.vehicleName, "Operational Cost (₹)": v.totalOperationalCost }))
+      );
+      XLSX.utils.book_append_sheet(wb, costliestSheet, "Top Costliest Vehicles");
+    }
+
+    if (monthlyFuel && Object.keys(monthlyFuel).length > 0) {
+      const fuelSheet = XLSX.utils.json_to_sheet(
+        Object.entries(monthlyFuel).map(([month, data]) => ({
+          Month: month,
+          Liters: (data as { liters: number }).liters,
+          "Cost (₹)": (data as { cost: number }).cost,
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, fuelSheet, "Monthly Fuel");
+    }
+
+    const driverSafetyTyped = driverSafety as { id: number; name: string; licenseExpiry: string; safetyScore: number | null; tripCompletionRate: number | null; _count: { trips: number } }[];
+    if (driverSafetyTyped.length > 0) {
+      const driverSheet = XLSX.utils.json_to_sheet(
+        driverSafetyTyped.map((d) => ({
+          Name: d.name,
+          "License Expiry": new Date(d.licenseExpiry).toLocaleDateString(),
+          "Safety Score": d.safetyScore ?? "",
+          "Trip Completion %": d.tripCompletionRate != null ? d.tripCompletionRate : "",
+          Trips: d._count?.trips ?? 0,
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, driverSheet, "Driver Safety");
+    }
+
+    XLSX.writeFile(wb, `FleetFlow_Analytics_${date}.xlsx`);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -166,8 +230,8 @@ export default function Analytics() {
         <NeoBrutalCardCompact>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
             <NeoBrutalSectionTitle>Monthly Financial Summary (Fuel + Maintenance)</NeoBrutalSectionTitle>
-            <NeoBrutalButton variant="outline" size="sm" type="button">
-              Download PDF / Excel
+            <NeoBrutalButton variant="outline" size="sm" type="button" onClick={handleDownloadExcel}>
+              Download Excel
             </NeoBrutalButton>
           </div>
           {monthlyFinancial.length > 0 ? (
