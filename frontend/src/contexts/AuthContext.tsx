@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, useEffect } from "react";
 import { authApi } from "@/lib/api";
 
 type User = { id: number; email: string; name: string | null; role: string };
@@ -6,6 +6,7 @@ type User = { id: number; email: string; name: string | null; role: string };
 const AuthContext = createContext<{
   user: User | null;
   token: string | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string, role?: string) => Promise<void>;
   logout: () => void;
@@ -13,6 +14,7 @@ const AuthContext = createContext<{
 } | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(() => {
     try {
       const raw = localStorage.getItem("fleetflow_user");
@@ -22,6 +24,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("fleetflow_token"));
+
+  useEffect(() => {
+    // Simulate checking authentication status
+    const checkAuth = () => {
+      try {
+        const storedToken = localStorage.getItem("fleetflow_token");
+        const storedUser = localStorage.getItem("fleetflow_user");
+        
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        localStorage.removeItem("fleetflow_token");
+        localStorage.removeItem("fleetflow_user");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const setAuth = useCallback((u: User, t: string) => {
     setUser(u);
@@ -48,8 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, login, register, logout, setAuth }),
-    [user, token, login, register, logout, setAuth]
+    () => ({ user, token, isLoading, login, register, logout, setAuth }),
+    [user, token, isLoading, login, register, logout, setAuth]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
