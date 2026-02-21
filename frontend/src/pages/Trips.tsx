@@ -49,8 +49,8 @@ export default function Trips() {
   });
 
   const { data: vehicles = [] } = useQuery({
-    queryKey: ["vehicles", "available"],
-    queryFn: () => vehiclesApi.listAvailable(),
+    queryKey: ["vehicles", "all"],
+    queryFn: () => vehiclesApi.list({ retired: "false" }) as Promise<{ id: number; name: string; licensePlate: string; status: string }[]>,
   });
 
   const { data: drivers = [] } = useQuery({
@@ -202,10 +202,10 @@ export default function Trips() {
                 onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}
                 required
               >
-                <option value="">Select</option>
-                {(vehicles as { id: number; name: string; licensePlate: string }[]).map((v) => (
+                <option value="">Select vehicle (choose AVAILABLE for new trip)</option>
+                {(vehicles as { id: number; name: string; licensePlate: string; status: string }[]).map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.name} ({v.licensePlate})
+                    {v.name} ({v.licensePlate}) — {v.status}
                   </option>
                 ))}
               </NeoBrutalSelect>

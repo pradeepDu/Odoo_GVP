@@ -102,66 +102,16 @@ async function main() {
   let vehicleIds: number[] = [];
   if (existingVehicles === 0) {
     const vehicles = await Promise.all([
-      prisma.vehicle.create({
-        data: {
-          name: "TRK-01",
-          model: "Ashok Leyland 3718",
-          licensePlate: "MH12 AB 1234",
-          maxCapacityKg: 9000,
-          odometer: 45200,
-          status: "ON_TRIP",
-          vehicleType: "TRUCK",
-          region: "Mumbai",
-        },
-      }),
-      prisma.vehicle.create({
-        data: {
-          name: "TRK-02",
-          model: "Tata Signa",
-          licensePlate: "MH14 CD 5678",
-          maxCapacityKg: 7500,
-          odometer: 28100,
-          status: "AVAILABLE",
-          vehicleType: "TRUCK",
-          region: "Pune",
-        },
-      }),
-      prisma.vehicle.create({
-        data: {
-          name: "VAN-01",
-          model: "Eicher Pro 2049",
-          licensePlate: "MH02 EF 9012",
-          maxCapacityKg: 3500,
-          odometer: 12500,
-          status: "IN_SHOP",
-          vehicleType: "VAN",
-          region: "Mumbai",
-        },
-      }),
-      prisma.vehicle.create({
-        data: {
-          name: "VAN-02",
-          model: "Mahindra Blazo",
-          licensePlate: "MH43 GH 3456",
-          maxCapacityKg: 4000,
-          odometer: 32000,
-          status: "AVAILABLE",
-          vehicleType: "VAN",
-          region: "Nashik",
-        },
-      }),
-      prisma.vehicle.create({
-        data: {
-          name: "BIKE-01",
-          model: "Bajaj Boxer",
-          licensePlate: "MH01 IJ 7890",
-          maxCapacityKg: 150,
-          odometer: 8900,
-          status: "AVAILABLE",
-          vehicleType: "BIKE",
-          region: "Mumbai",
-        },
-      }),
+      prisma.vehicle.create({ data: { name: "TRK-01", model: "Ashok Leyland 3718", licensePlate: "MH12 AB 1234", maxCapacityKg: 9000, odometer: 45200, status: "ON_TRIP", vehicleType: "TRUCK", region: "Mumbai" } }),
+      prisma.vehicle.create({ data: { name: "TRK-02", model: "Tata Signa", licensePlate: "MH14 CD 5678", maxCapacityKg: 7500, odometer: 28100, status: "AVAILABLE", vehicleType: "TRUCK", region: "Pune" } }),
+      prisma.vehicle.create({ data: { name: "TRK-03", model: "BharatBenz 3128", licensePlate: "MH31 KL 1111", maxCapacityKg: 8000, odometer: 52000, status: "AVAILABLE", vehicleType: "TRUCK", region: "Nashik" } }),
+      prisma.vehicle.create({ data: { name: "VAN-01", model: "Eicher Pro 2049", licensePlate: "MH02 EF 9012", maxCapacityKg: 3500, odometer: 12500, status: "IN_SHOP", vehicleType: "VAN", region: "Mumbai" } }),
+      prisma.vehicle.create({ data: { name: "VAN-02", model: "Mahindra Blazo", licensePlate: "MH43 GH 3456", maxCapacityKg: 4000, odometer: 32000, status: "AVAILABLE", vehicleType: "VAN", region: "Nashik" } }),
+      prisma.vehicle.create({ data: { name: "VAN-03", model: "Tata Ultra", licensePlate: "MH12 MN 2222", maxCapacityKg: 3000, odometer: 18500, status: "AVAILABLE", vehicleType: "VAN", region: "Mumbai" } }),
+      prisma.vehicle.create({ data: { name: "VAN-04", model: "Ashok Leyland Dost", licensePlate: "MH14 PQ 3333", maxCapacityKg: 2500, odometer: 42000, status: "ON_TRIP", vehicleType: "VAN", region: "Pune" } }),
+      prisma.vehicle.create({ data: { name: "VAN-05", model: "Eicher Pro 3015", licensePlate: "MH02 RS 4444", maxCapacityKg: 3500, odometer: 29800, status: "AVAILABLE", vehicleType: "VAN", region: "Mumbai" } }),
+      prisma.vehicle.create({ data: { name: "BIKE-01", model: "Bajaj Boxer", licensePlate: "MH01 IJ 7890", maxCapacityKg: 150, odometer: 8900, status: "AVAILABLE", vehicleType: "BIKE", region: "Mumbai" } }),
+      prisma.vehicle.create({ data: { name: "BIKE-02", model: "Hero Splendor", licensePlate: "MH43 TU 5555", maxCapacityKg: 120, odometer: 15600, status: "AVAILABLE", vehicleType: "BIKE", region: "Nashik" } }),
     ]);
     vehicleIds = vehicles.map((v) => v.id);
     console.log("Vehicles seeded");
@@ -172,57 +122,45 @@ async function main() {
   const existingTrips = await prisma.trip.count();
   if (existingTrips === 0 && vehicleIds.length >= 3 && driverIds.length >= 3) {
     const now = new Date();
-    const lastMonth = new Date(now);
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const completedDates: Date[] = [];
+    for (let m = -5; m <= 0; m++) {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() + m);
+      d.setDate(5 + (m + 5) * 3);
+      completedDates.push(d);
+    }
+    const base = [
+      { v: 0, d: 0, cargo: 4500, origin: "Mumbai", dest: "Pune", startOdo: 45000, endOdo: 45200, completedAt: completedDates[5] },
+      { v: 0, d: 0, cargo: 3200, origin: "Pune", dest: "Nashik", startOdo: 44800, endOdo: 45000, completedAt: completedDates[4] },
+      { v: 0, d: 0, cargo: 2800, origin: "Nashik", dest: "Mumbai", startOdo: 44600, endOdo: 44800, completedAt: completedDates[3] },
+      { v: 1, d: 1, cargo: 2000, origin: "Pune", dest: "Mumbai", startOdo: 27800, endOdo: 28100, completedAt: completedDates[4] },
+      { v: 1, d: 1, cargo: 3500, origin: "Mumbai", dest: "Pune", startOdo: 27500, endOdo: 27800, completedAt: completedDates[2] },
+      { v: 2, d: 0, cargo: 5000, origin: "Nashik", dest: "Mumbai", startOdo: 51800, endOdo: 52000, completedAt: completedDates[5] },
+      { v: 3, d: 2, cargo: 1200, origin: "Mumbai", dest: "Thane", startOdo: 12200, endOdo: 12500, completedAt: completedDates[3] },
+      { v: 4, d: 1, cargo: 1800, origin: "Nashik", dest: "Pune", startOdo: 31800, endOdo: 32000, completedAt: completedDates[1] },
+      { v: 5, d: 0, cargo: 2200, origin: "Mumbai", dest: "Pune", startOdo: 18200, endOdo: 18500, completedAt: completedDates[0] },
+      { v: 6, d: 2, cargo: 1500, origin: "Pune", dest: "Mumbai", startOdo: 41800, endOdo: 42000, completedAt: completedDates[2] },
+    ];
+    for (const row of base) {
+      await prisma.trip.create({
+        data: {
+          vehicleId: vehicleIds[row.v],
+          driverId: driverIds[row.d],
+          cargoWeightKg: row.cargo,
+          status: "COMPLETED",
+          origin: row.origin,
+          destination: row.dest,
+          startOdometer: row.startOdo,
+          endOdometer: row.endOdo,
+          completedAt: row.completedAt,
+        },
+      });
+    }
     await prisma.trip.createMany({
       data: [
-        {
-          vehicleId: vehicleIds[0],
-          driverId: driverIds[0],
-          cargoWeightKg: 4500,
-          status: "COMPLETED",
-          origin: "Mumbai",
-          destination: "Pune",
-          startOdometer: 45000,
-          endOdometer: 45200,
-          completedAt: now,
-        },
-        {
-          vehicleId: vehicleIds[0],
-          driverId: driverIds[0],
-          cargoWeightKg: 3200,
-          status: "COMPLETED",
-          origin: "Pune",
-          destination: "Nashik",
-          startOdometer: 44800,
-          endOdometer: 45000,
-          completedAt: lastMonth,
-        },
-        {
-          vehicleId: vehicleIds[1],
-          driverId: driverIds[1],
-          cargoWeightKg: 2000,
-          status: "DISPATCHED",
-          origin: "Pune",
-          destination: "Mumbai",
-          startOdometer: 28000,
-        },
-        {
-          vehicleId: vehicleIds[2],
-          driverId: driverIds[2],
-          cargoWeightKg: 1500,
-          status: "DRAFT",
-          origin: "Mumbai",
-          destination: "Thane",
-        },
-        {
-          vehicleId: vehicleIds[0],
-          driverId: driverIds[0],
-          cargoWeightKg: 1000,
-          status: "CANCELLED",
-          origin: "Mumbai",
-          destination: "Goa",
-        },
+        { vehicleId: vehicleIds[1], driverId: driverIds[1], cargoWeightKg: 2500, status: "DISPATCHED", origin: "Pune", destination: "Mumbai", startOdometer: 28000 },
+        { vehicleId: vehicleIds[3], driverId: driverIds[2], cargoWeightKg: 1500, status: "DRAFT", origin: "Mumbai", destination: "Thane" },
+        { vehicleId: vehicleIds[0], driverId: driverIds[0], cargoWeightKg: 1000, status: "CANCELLED", origin: "Mumbai", destination: "Goa" },
       ],
     });
     console.log("Trips seeded");
@@ -231,30 +169,26 @@ async function main() {
   const existingFuel = await prisma.fuelLog.count();
   if (existingFuel === 0 && vehicleIds.length > 0) {
     const trips = await prisma.trip.findMany({ where: { status: "COMPLETED" }, select: { id: true, vehicleId: true, completedAt: true } });
-    const d = new Date();
-    const months = [
-      new Date(d.getFullYear(), d.getMonth() - 2, 15),
-      new Date(d.getFullYear(), d.getMonth() - 1, 10),
-      new Date(d.getFullYear(), d.getMonth(), 5),
-    ];
     const fuelData: { vehicleId: number; tripId: number | null; liters: number; cost: number; date: Date }[] = [];
     for (const t of trips) {
       fuelData.push({
         vehicleId: t.vehicleId,
         tripId: t.id,
-        liters: 120,
-        cost: 12000,
+        liters: 100 + Math.floor(Math.random() * 60),
+        cost: 10000 + Math.floor(Math.random() * 6000),
         date: t.completedAt ?? new Date(),
       });
     }
-    for (let i = 0; i < vehicleIds.length && i < 4; i++) {
-      for (const m of months) {
+    const now = new Date();
+    for (let monthOffset = -11; monthOffset <= 0; monthOffset++) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 10);
+      for (let vi = 0; vi < Math.min(vehicleIds.length, 8); vi++) {
         fuelData.push({
-          vehicleId: vehicleIds[i],
+          vehicleId: vehicleIds[vi],
           tripId: null,
-          liters: 80 + i * 15,
-          cost: 8000 + i * 1500,
-          date: m,
+          liters: 70 + vi * 12 + (monthOffset % 3) * 15,
+          cost: 7000 + vi * 1200 + (monthOffset % 2) * 2000,
+          date: monthDate,
         });
       }
     }
@@ -265,16 +199,33 @@ async function main() {
   const existingMaint = await prisma.maintenanceLog.count();
   if (existingMaint === 0 && vehicleIds.length > 0) {
     const baseDate = new Date();
-    await prisma.maintenanceLog.createMany({
-      data: [
-        { vehicleId: vehicleIds[0], description: "Oil change and filter", serviceType: "Scheduled", cost: 4500 },
-        { vehicleId: vehicleIds[0], description: "Brake pad replacement", serviceType: "Repair", cost: 8200 },
-        { vehicleId: vehicleIds[1], description: "Tyre rotation", serviceType: "Scheduled", cost: 1200 },
-        { vehicleId: vehicleIds[2], description: "Engine check and diagnostics", serviceType: "Repair", cost: 3500 },
-        { vehicleId: vehicleIds[2], description: "Battery replacement", serviceType: "Repair", cost: 6000 },
-        { vehicleId: vehicleIds[3], description: "General service", serviceType: "Scheduled", cost: 2800 },
-      ],
-    });
+    const services = [
+      { desc: "Oil change and filter", type: "Scheduled", cost: 4500 },
+      { desc: "Brake pad replacement", type: "Repair", cost: 8200 },
+      { desc: "Tyre rotation", type: "Scheduled", cost: 1200 },
+      { desc: "Engine check and diagnostics", type: "Repair", cost: 3500 },
+      { desc: "Battery replacement", type: "Repair", cost: 6000 },
+      { desc: "General service", type: "Scheduled", cost: 2800 },
+      { desc: "AC service", type: "Scheduled", cost: 1800 },
+      { desc: "Wheel alignment", type: "Repair", cost: 2200 },
+      { desc: "Clutch replacement", type: "Repair", cost: 9500 },
+      { desc: "Suspension check", type: "Scheduled", cost: 1500 },
+    ];
+    for (let vi = 0; vi < Math.min(vehicleIds.length, 8); vi++) {
+      for (let m = -6; m <= 0; m++) {
+        const d = new Date(baseDate.getFullYear(), baseDate.getMonth() + m, 5 + vi);
+        const svc = services[(vi + m + 10) % services.length];
+        await prisma.maintenanceLog.create({
+          data: {
+            vehicleId: vehicleIds[vi],
+            description: svc.desc,
+            serviceType: svc.type,
+            cost: svc.cost + (m % 2) * 500,
+            createdAt: d,
+          },
+        });
+      }
+    }
     console.log("Maintenance logs seeded");
   }
 

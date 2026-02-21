@@ -33,15 +33,16 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" aria-hidden onClick={onClose} />
       <div
-        className="relative z-10 w-full max-w-md rounded-lg border bg-card p-6 shadow-lg"
+        className="relative z-10 w-full max-w-md rounded-lg border-4 border-black bg-white p-6 shadow-lg text-black"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
+        style={{ backgroundColor: "#fff" }}
       >
-        <h2 id="confirm-title" className="text-lg font-semibold">
+        <h2 id="confirm-title" className="text-lg font-semibold text-black">
           {title}
         </h2>
-        <p className="text-muted-foreground mt-2 text-sm">{message}</p>
+        <p className="text-black/80 mt-2 text-sm">{message}</p>
         <div className="mt-6 flex justify-end gap-2">
           <Button
             type="button"
