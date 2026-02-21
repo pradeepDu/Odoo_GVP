@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import prisma from "../../config/prisma";
 import { sendError } from "../utils/response";
 
@@ -40,6 +40,6 @@ export async function authMiddleware(
   }
 }
 
-export function signToken(payload: JwtPayload, expiresIn = "7d"): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+export function signToken(payload: JwtPayload, expiresIn: string = "7d"): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn } as SignOptions);
 }
